@@ -11,6 +11,7 @@ function `validate_episode` aggregates them all.
 from __future__ import annotations
 
 import logging
+import re
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -523,6 +524,322 @@ async def check_relationship_inconsistencies(
 
 
 # ---------------------------------------------------------------------------
+# Checker 6: Dead Character Activity
+# ---------------------------------------------------------------------------
+
+
+async def check_dead_character_activity(
+    db: AsyncSession,
+    episode: models.Episode,
+    new_events: list[models.TimelineEvent],
+) -> list[ValidationFinding]:
+    """Check if a dead character is erroneously active in the current episode.
+
+    Logic:
+    - Find death events in previous episodes.
+    - Identify which character died by name matching in description.
+    - If they are involved in new events in this episode, flag it.
+    """
+    findings: list[ValidationFinding] = []
+
+    # Get all characters to map ID -> name
+    characters = await memory_graph.get_all_characters(db)
+    char_map = {c.id: c for c in characters}
+
+    all_events = await memory_graph.get_all_timeline_events(db)
+    
+    dead_char_ids = set()
+    death_event_info = {}
+
+    for evt in all_events:
+        if evt.episode_id != episode.id and evt.turning_point_type == "DEATH":
+            for cid in (evt.characters_involved or []):
+                char = char_map.get(cid)
+                if char and char.name.lower() in evt.event_description.lower():
+                    dead_char_ids.add(cid)
+                    death_event_info[cid] = evt
+
+    # Check if any dead character is involved in new events in the current episode
+    for evt in new_events:
+        for cid in (evt.characters_involved or []):
+            if cid in dead_char_ids:
+                char = char_map.get(cid)
+                death_evt = death_event_info[cid]
+                death_ep_num = "unknown"
+                death_ep = await memory_graph.get_episode(db, death_evt.episode_id)
+                if death_ep:
+                    death_ep_num = death_ep.number
+
+                findings.append(
+                    ValidationFinding(
+                        category=IssueCategory.CHARACTER_CONTRADICTION,
+                        status=IssueStatus.CRITICAL,
+                        summary=(
+                            f"Character '{char.name}' is active in Episode {episode.number} "
+                            f"but was reported dead in Episode {death_ep_num}."
+                        ),
+                        evidence=[
+                            _make_evidence(
+                                episode,
+                                evt.event_description,
+                                f"'{char.name}' participates in this event despite being dead.",
+                            )
+                        ],
+                        details={
+                            "character_name": char.name,
+                            "death_episode": death_ep_num,
+                            "death_event": death_evt.event_description,
+                            "current_event": evt.event_description,
+                        },
+                    )
+                )
+
+    return findings
+
+
+# ---------------------------------------------------------------------------
+# Checker 7: Secret Leaks
+# ---------------------------------------------------------------------------
+
+
+def _is_secret_referenced(secret_desc: str, event_desc: str) -> bool:
+    """Helper to detect if a secret's core message is mentioned in an event description."""
+    stop_words = {
+        "the", "a", "an", "and", "or", "but", "if", "then", "else", "of", "at", 
+        "by", "for", "with", "about", "to", "in", "on", "into", "has", "had", 
+        "have", "is", "was", "were", "been", "who", "whom", "whose", "which", 
+        "that", "this", "those", "these", "his", "her", "their", "its", "him", 
+        "them", "she", "he", "they", "it", "my", "your", "our", "me", "us", "you"
+    }
+    words_secret = {w.strip(".,;:?!'\"()").lower() for w in secret_desc.split()} - stop_words
+    words_event = {w.strip(".,;:?!'\"()").lower() for w in event_desc.split()} - stop_words
+    
+    overlap = words_secret.intersection(words_event)
+    required_overlap = min(3, len(words_secret))
+    return len(overlap) >= required_overlap
+
+
+async def check_secret_leaks(
+    db: AsyncSession,
+    episode: models.Episode,
+    new_events: list[models.TimelineEvent],
+) -> list[ValidationFinding]:
+    """Check if a secret not yet revealed is referenced or known by others.
+
+    Logic:
+    - If a secret is unrevealed in this episode:
+      - Check if any new timeline event in this episode references the secret.
+      - If the event involves characters other than the holder, flag it.
+    """
+    findings: list[ValidationFinding] = []
+
+    characters = await memory_graph.get_all_characters(db)
+    char_map = {c.id: c.name for c in characters}
+
+    secrets = await memory_graph.get_all_secrets(db)
+
+    for secret in secrets:
+        is_unrevealed = not secret.revealed
+        if secret.revealed and secret.revealed_episode is not None:
+            reveal_ep = await memory_graph.get_episode(db, secret.revealed_episode)
+            if reveal_ep and episode.number < reveal_ep.number:
+                is_unrevealed = True
+
+        if not is_unrevealed:
+            continue
+
+        holder_name = char_map.get(secret.holder_character_id, "Unknown")
+
+        for evt in new_events:
+            if _is_secret_referenced(secret.description, evt.event_description):
+                others_involved = [
+                    char_map.get(cid, "Unknown")
+                    for cid in (evt.characters_involved or [])
+                    if cid != secret.holder_character_id
+                ]
+
+                if others_involved:
+                    findings.append(
+                        ValidationFinding(
+                            category=IssueCategory.RELATIONSHIP_INCONSISTENCY,
+                            status=IssueStatus.STRONG,
+                            summary=(
+                                f"Secret leak detected: '{evt.event_description[:60]}...' "
+                                f"references secret '{secret.description[:40]}...' owned by {holder_name}, "
+                                f"involving other characters ({', '.join(others_involved)}) before it is revealed."
+                            ),
+                            evidence=[
+                                _make_evidence(
+                                    episode,
+                                    evt.event_description,
+                                    f"This event references the secret held by {holder_name} and involves {', '.join(others_involved)}.",
+                                )
+                            ],
+                            details={
+                                "secret_description": secret.description,
+                                "holder_name": holder_name,
+                                "other_characters": others_involved,
+                                "event_description": evt.event_description,
+                            },
+                        )
+                    )
+
+    return findings
+
+
+# ---------------------------------------------------------------------------
+# Checker 8: Chronological Time & Age Inconsistencies
+# ---------------------------------------------------------------------------
+
+
+def _extract_age(event_desc: str, character_name: str) -> int | None:
+    """Extract age of a character from event description using regex patterns."""
+    escaped_name = re.escape(character_name)
+    patterns = [
+        rf"{escaped_name}\s+(?:is|was|aged|age)\s+(\d+)",
+        rf"{escaped_name},\s*(\d+)\b",
+        rf"\b(\d+)-year-old\s+{escaped_name}",
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, event_desc, re.IGNORECASE)
+        if match:
+            return int(match.group(1))
+    return None
+
+
+def _extract_time_jump(event_desc: str) -> int | None:
+    """Extract time jump years from event description."""
+    patterns = [
+        rf"\b(\d+)\s+years?\s+(?:later|pass|passed|elapsed)\b",
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, event_desc, re.IGNORECASE)
+        if match:
+            return int(match.group(1))
+    return None
+
+
+async def check_age_and_time_inconsistencies(
+    db: AsyncSession,
+    episode: models.Episode,
+    new_events: list[models.TimelineEvent],
+) -> list[ValidationFinding]:
+    """Check for character age contradictions or timeline time-gap issues.
+
+    Logic:
+    - Trace timeline to extract time jumps and track character age mentions.
+    - If a character's age decreases, or increases significantly without a time jump, flag it.
+    """
+    findings: list[ValidationFinding] = []
+
+    characters = await memory_graph.get_all_characters(db)
+    char_map = {c.id: c.name for c in characters}
+
+    all_events = await memory_graph.get_all_timeline_events(db)
+    all_events_sorted = sorted(all_events, key=lambda x: x.sequence_order)
+
+    cumulative_time_jump = {}
+    current_time_offset = 0
+    for evt in all_events_sorted:
+        jump = _extract_time_jump(evt.event_description)
+        if jump:
+            current_time_offset += jump
+        cumulative_time_jump[evt.sequence_order] = current_time_offset
+
+    age_mentions = []
+    for evt in all_events_sorted:
+        for cid in (evt.characters_involved or []):
+            char_name = char_map.get(cid)
+            if not char_name:
+                continue
+            age = _extract_age(evt.event_description, char_name)
+            if age is not None:
+                age_mentions.append({
+                    "char_id": cid,
+                    "char_name": char_name,
+                    "age": age,
+                    "seq_order": evt.sequence_order,
+                    "episode_id": evt.episode_id,
+                    "event_desc": evt.event_description
+                })
+
+    char_age_history = {}
+    for mention in age_mentions:
+        char_age_history.setdefault(mention["char_id"], []).append(mention)
+
+    current_mentions = [m for m in age_mentions if m["episode_id"] == episode.id]
+
+    for curr in current_mentions:
+        cid = curr["char_id"]
+        history = char_age_history[cid]
+        for prev in history:
+            if prev["seq_order"] >= curr["seq_order"]:
+                continue
+            
+            time_jump = cumulative_time_jump[curr["seq_order"]] - cumulative_time_jump[prev["seq_order"]]
+            age_diff = curr["age"] - prev["age"]
+
+            if age_diff < 0:
+                prev_ep = await memory_graph.get_episode(db, prev["episode_id"])
+                prev_ep_num = prev_ep.number if prev_ep else "unknown"
+                findings.append(
+                    ValidationFinding(
+                        category=IssueCategory.TIMELINE_BREAK,
+                        status=IssueStatus.CRITICAL,
+                        summary=(
+                            f"Character '{curr['char_name']}' aged backwards: "
+                            f"{prev['age']} in Episode {prev_ep_num} to {curr['age']} in Episode {episode.number}."
+                        ),
+                        evidence=[
+                            _make_evidence(
+                                episode,
+                                curr["event_desc"],
+                                f"'{curr['char_name']}' is stated to be {curr['age']} years old here.",
+                            )
+                        ],
+                        details={
+                            "character_name": curr["char_name"],
+                            "previous_age": prev["age"],
+                            "previous_episode": prev_ep_num,
+                            "current_age": curr["age"],
+                            "current_episode": episode.number,
+                        },
+                    )
+                )
+            elif age_diff > time_jump + 1:
+                prev_ep = await memory_graph.get_episode(db, prev["episode_id"])
+                prev_ep_num = prev_ep.number if prev_ep else "unknown"
+                findings.append(
+                    ValidationFinding(
+                        category=IssueCategory.TIMELINE_BREAK,
+                        status=IssueStatus.STRONG,
+                        summary=(
+                            f"Age inconsistency for '{curr['char_name']}': "
+                            f"aged from {prev['age']} (Episode {prev_ep_num}) to {curr['age']} (Episode {episode.number}) "
+                            f"but only {time_jump} years elapsed in the timeline."
+                        ),
+                        evidence=[
+                            _make_evidence(
+                                episode,
+                                curr["event_desc"],
+                                f"'{curr['char_name']}' is stated to be {curr['age']} years old here.",
+                            )
+                        ],
+                        details={
+                            "character_name": curr["char_name"],
+                            "previous_age": prev["age"],
+                            "previous_episode": prev_ep_num,
+                            "current_age": curr["age"],
+                            "current_episode": episode.number,
+                            "time_elapsed_years": time_jump,
+                        },
+                    )
+                )
+
+    return findings
+
+
+# ---------------------------------------------------------------------------
 # Master validation function
 # ---------------------------------------------------------------------------
 
@@ -565,6 +882,9 @@ async def validate_episode(
         check_broken_promises,
         check_world_rule_violations,
         check_relationship_inconsistencies,
+        check_dead_character_activity,
+        check_secret_leaks,
+        check_age_and_time_inconsistencies,
     ]
 
     for checker in checkers:
