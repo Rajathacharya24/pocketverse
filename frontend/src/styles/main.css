@@ -38,6 +38,15 @@
 
   --shadow-glow: 0 0 15px rgba(217, 30, 54, 0.25);
   --shadow-panel: 0 8px 32px rgba(0, 0, 0, 0.6);
+
+  /* Semantic Color Tokens — functional states, not decoration */
+  --primary: var(--accent-red);
+  --primary-hover: #F23855;
+  --secondary: var(--accent-amber);
+  --success: var(--terminal-green);
+  --warning: #E3B341;
+  --danger: #FF4757;
+  --info: #7C8FA6;
 }
 
 *, *::before, *::after {
@@ -151,6 +160,51 @@ body::after {
   z-index: 0;
 }
 
+/* Hero Visual — Duotone + Halo + Parallax */
+.hero-visual {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+
+.hero-halo {
+  position: absolute;
+  width: 110%;
+  height: 110%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(217, 30, 54, 0.18) 0%, rgba(217, 30, 54, 0.06) 40%, transparent 70%);
+  animation: halo-breathe 4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes halo-breathe {
+  0%, 100% { opacity: 0.7; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.04); }
+}
+
+.hero-subject {
+  position: relative;
+  z-index: 2;
+  will-change: transform;
+}
+
+.hero-grain {
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.06'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 200px 200px;
+  pointer-events: none;
+  z-index: 3;
+  mix-blend-mode: overlay;
+  opacity: 0.6;
+}
+
 /* Typography Helpers */
 h1 {
   font-family: var(--font-display);
@@ -205,18 +259,18 @@ button, .btn {
 }
 
 button:focus-visible, .btn:focus-visible {
-  outline: 2px solid var(--accent-red);
+  outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
 
 .btn-primary {
-  background-color: var(--accent-red);
+  background-color: var(--primary);
   color: var(--text-main);
   box-shadow: 0 0 15px rgba(217, 30, 54, 0.4);
 }
 
 .btn-primary:hover {
-  background-color: #E6253E;
+  background-color: var(--primary-hover);
   box-shadow: 0 0 25px rgba(217, 30, 54, 0.7);
   transform: translateY(-1px);
 }
@@ -236,7 +290,7 @@ button:focus-visible, .btn:focus-visible {
 
 .btn-secondary:hover {
   background-color: var(--elevated-2);
-  border-color: var(--accent-red);
+  border-color: var(--secondary);
   color: var(--text-main);
 }
 
@@ -253,13 +307,13 @@ button:focus-visible, .btn:focus-visible {
 }
 
 .btn-danger {
-  background: rgba(217, 30, 54, 0.15);
-  color: var(--accent-red);
+  background: rgba(255, 71, 87, 0.15);
+  color: var(--danger);
   border: 1px solid var(--border);
 }
 
 .btn-danger:hover {
-  background: var(--accent-red);
+  background: var(--danger);
   color: var(--text-main);
 }
 
@@ -284,16 +338,28 @@ button:focus-visible, .btn:focus-visible {
 }
 
 .badge-analyzed {
-  border-color: var(--accent-amber);
-  color: var(--accent-amber);
+  border-color: var(--secondary);
+  color: var(--secondary);
   background: rgba(217, 119, 6, 0.1);
 }
 
 .badge-finalized {
-  border-color: var(--accent-red);
+  border-color: var(--success);
   color: var(--text-main);
-  background: rgba(217, 30, 54, 0.12);
-  box-shadow: 0 0 10px rgba(217, 30, 54, 0.2);
+  background: rgba(95, 224, 122, 0.12);
+  box-shadow: 0 0 10px rgba(95, 224, 122, 0.15);
+}
+
+.badge-failed {
+  border-color: var(--danger);
+  color: var(--danger);
+  background: rgba(255, 71, 87, 0.1);
+}
+
+.badge-processing {
+  border-color: var(--info);
+  color: var(--info);
+  background: rgba(124, 143, 166, 0.1);
 }
 
 .badge-dot {
@@ -304,8 +370,10 @@ button:focus-visible, .btn:focus-visible {
 }
 
 .badge-draft .badge-dot { background-color: var(--text-muted); }
-.badge-analyzed .badge-dot { background-color: var(--accent-amber); }
-.badge-finalized .badge-dot { background-color: var(--accent-red); box-shadow: 0 0 6px var(--accent-red); }
+.badge-analyzed .badge-dot { background-color: var(--secondary); }
+.badge-finalized .badge-dot { background-color: var(--success); box-shadow: 0 0 6px var(--success); }
+.badge-failed .badge-dot { background-color: var(--danger); box-shadow: 0 0 6px var(--danger); }
+.badge-processing .badge-dot { background-color: var(--info); }
 
 /* Form Controls */
 input[type="text"], textarea, select {
@@ -322,7 +390,7 @@ input[type="text"], textarea, select {
 }
 
 input[type="text"]:focus, textarea:focus, select:focus {
-  border-color: var(--accent-red);
+  border-color: var(--primary);
   box-shadow: 0 0 12px rgba(217, 30, 54, 0.3);
 }
 

@@ -39,7 +39,7 @@ export const Header: React.FC<HeaderProps> = ({
             width: '32px',
             height: '32px',
             borderRadius: '8px',
-            background: 'var(--accent-red)',
+            background: 'var(--primary)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -56,7 +56,7 @@ export const Header: React.FC<HeaderProps> = ({
               letterSpacing: '-0.01em',
               lineHeight: 1,
             }}>
-              Pocket<span style={{ color: 'var(--accent-red)' }}>Verse</span>
+              Pocket<span style={{ color: 'var(--primary)' }}>Verse</span>
             </h1>
             <div style={{
               fontSize: '0.58rem',

@@ -34,13 +34,13 @@ export const EpisodeList: React.FC<EpisodeListProps> = ({
     switch (audioStatus) {
       case 'generating':
         return (
-          <span className="badge-pill badge-analyzed" style={{ fontSize: '0.55rem', padding: '0.1rem 0.4rem' }}>
+          <span className="badge-pill badge-processing" style={{ fontSize: '0.55rem', padding: '0.1rem 0.4rem' }}>
             <RotateCw size={8} className="spin" /> Generating
           </span>
         );
       case 'ready_to_review':
         return (
-          <span className="badge-pill" style={{ fontSize: '0.55rem', padding: '0.1rem 0.4rem', borderColor: 'rgba(217, 119, 6, 0.25)', color: 'var(--accent-amber)', background: 'rgba(217, 119, 6, 0.12)' }}>
+          <span className="badge-pill badge-analyzed" style={{ fontSize: '0.55rem', padding: '0.1rem 0.4rem' }}>
             <Sparkles size={8} /> Ready
           </span>
         );
@@ -121,7 +121,7 @@ export const EpisodeList: React.FC<EpisodeListProps> = ({
                       onClick={(e) => onDeleteEpisode(episode.id, e)}
                       title="Delete Episode"
                     >
-                      <Trash2 size={11} color="var(--ink-dim)" />
+                      <Trash2 size={11} color="var(--danger)" />
                     </button>
                   </div>
                 </div>

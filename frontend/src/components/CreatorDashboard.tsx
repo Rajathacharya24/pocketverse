@@ -499,11 +499,11 @@ export const CreatorDashboard: React.FC<CreatorDashboardProps> = ({
                             <ShieldCheck size={8} /> Published
                           </span>
                         ) : ep.audio_status === 'ready_to_review' ? (
-                          <span className="badge-pill" style={{ fontSize: '0.52rem', padding: '0.08rem 0.4rem', borderColor: 'rgba(217, 119, 6, 0.25)', color: 'var(--accent-amber)', background: 'rgba(217, 119, 6, 0.12)' }}>
+                          <span className="badge-pill badge-analyzed" style={{ fontSize: '0.52rem', padding: '0.08rem 0.4rem' }}>
                             <Sparkles size={8} /> Audio Ready
                           </span>
                         ) : ep.status === 'finalized' ? (
-                          <span className="badge-pill" style={{ fontSize: '0.52rem', padding: '0.08rem 0.4rem', borderColor: 'rgba(217, 119, 6, 0.25)', color: 'var(--accent-amber)', background: 'rgba(217, 119, 6, 0.12)' }}>
+                          <span className="badge-pill badge-analyzed" style={{ fontSize: '0.52rem', padding: '0.08rem 0.4rem' }}>
                             <CheckCircle2 size={8} /> Finalized
                           </span>
                         ) : ep.status === 'analyzed' ? (
@@ -523,7 +523,7 @@ export const CreatorDashboard: React.FC<CreatorDashboardProps> = ({
                         {hasAudio && (
                           <>
                             <span style={{ opacity: 0.3 }}>·</span>
-                            <span style={{ color: 'var(--accent-red)' }}>
+                            <span style={{ color: 'var(--success)' }}>
                               <Volume2 size={10} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '2px' }} />Audio ✓
                             </span>
                           </>
@@ -540,8 +540,8 @@ export const CreatorDashboard: React.FC<CreatorDashboardProps> = ({
                         onClick={(e) => { e.stopPropagation(); onOpenAudioStudio(ep, e); }}
                         style={{
                           fontSize: '0.72rem', padding: '0.4rem 0.85rem',
-                          background: 'rgba(217, 30, 54, 0.08)', borderColor: 'rgba(217, 30, 54, 0.25)',
-                          color: 'var(--accent-red)', border: '1px solid rgba(217, 30, 54, 0.25)',
+                          background: 'rgba(95, 224, 122, 0.08)',
+                          color: 'var(--success)', border: '1px solid rgba(95, 224, 122, 0.25)',
                         }}
                       >
                         <Play size={12} style={{ fill: 'currentColor' }} /> Play
@@ -579,9 +579,10 @@ export const CreatorDashboard: React.FC<CreatorDashboardProps> = ({
                       <button
                         title="Delete Episode"
                         onClick={(e) => onDeleteEpisode(ep.id, e)}
+                        className="btn-danger"
                         style={{ border: 'none', padding: '0.3rem', borderRadius: '3px', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
                       >
-                        <Trash2 size={13} color="var(--ink-dim)" />
+                        <Trash2 size={13} color="var(--danger)" />
                       </button>
                     </div>
                   </div>
@@ -611,7 +612,7 @@ export const CreatorDashboard: React.FC<CreatorDashboardProps> = ({
               background: 'var(--accent-red-dim)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              <Plus size={18} color="var(--accent-red)" />
+              <Plus size={18} color="var(--primary)" />
             </div>
             <div>
               <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: '0.85rem' }}>Add Episode</div>
@@ -634,7 +635,7 @@ export const CreatorDashboard: React.FC<CreatorDashboardProps> = ({
                 background: 'rgba(217, 119, 6, 0.12)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <Sparkles size={18} color="var(--accent-amber)" />
+                <Sparkles size={18} color="var(--secondary)" />
               </div>
               <div>
                 <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: '0.85rem' }}>Run AI Analysis</div>
@@ -661,7 +662,7 @@ export const CreatorDashboard: React.FC<CreatorDashboardProps> = ({
                 background: 'rgba(217, 30, 54, 0.08)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <Mic size={18} color="var(--accent-red)" />
+                <Mic size={18} color="var(--primary)" />
               </div>
               <div>
                 <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: '0.85rem' }}>Generate Audio</div>
@@ -678,7 +679,7 @@ export const CreatorDashboard: React.FC<CreatorDashboardProps> = ({
           <div className="modal-card" style={{ maxWidth: '720px' }} onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                <Edit3 size={18} color="var(--accent-red)" />
+                <Edit3 size={18} color="var(--primary)" />
                 <h3 style={{ fontFamily: 'var(--font-display)', margin: 0, fontSize: '1.1rem', fontWeight: 600 }}>
                   Edit Episode {editingEpisode.episode_number}
                 </h3>
