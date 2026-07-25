@@ -35,7 +35,7 @@ export const WizardContainer: React.FC<WizardContainerProps> = ({
   // Trigger Step 1 on initial wizard load
   React.useEffect(() => {
     handleRunStep1();
-  }, []);
+  }, [episode.id]);
 
   const handleRunStep1 = async () => {
     setLoading(true);

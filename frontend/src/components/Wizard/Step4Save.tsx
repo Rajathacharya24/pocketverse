@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Save, CheckCircle, FileText, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Save, CheckCircle, ArrowRight } from 'lucide-react';
 
 interface Step4SaveProps {
   loading: boolean;

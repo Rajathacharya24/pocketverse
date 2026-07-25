@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { GrammarIssue } from '../../types';
-import { Check, ArrowRight, FileCheck, SpellCheck, RefreshCw } from 'lucide-react';
+import { Check, ArrowRight, FileCheck } from 'lucide-react';
 
 import { AgenticTelemetryHud } from '../AgenticTelemetryHud';
 
@@ -88,7 +88,7 @@ export const Step2Grammar: React.FC<Step2GrammarProps> = ({
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', maxHeight: '380px', overflowY: 'auto' }}>
         {issues.length === 0 ? (
           <div className="panel" style={{ textAlign: 'center', padding: '2.5rem', color: 'var(--ink-muted)' }}>
-            <FileCheck size={36} color="#10B981" style={{ marginBottom: '0.5rem' }} />
+            <FileCheck size={36} color="var(--accent-red)" style={{ marginBottom: '0.5rem' }} />
             <p>Clean Copy! No major grammar or style issues detected in this pass.</p>
           </div>
         ) : (
@@ -130,11 +130,11 @@ export const Step2Grammar: React.FC<Step2GrammarProps> = ({
                     borderRadius: 'var(--radius-sm)',
                     border: '1px solid var(--border-subtle)',
                   }}>
-                    <span style={{ color: '#EF4444', textDecoration: 'line-through' }}>
+                    <span style={{ color: 'var(--accent-red)', textDecoration: 'line-through' }}>
                       "{iss.snippet}"
                     </span>
                     <ArrowRight size={14} color="var(--ink-dim)" />
-                    <span style={{ color: '#10B981', fontWeight: 600 }}>
+                    <span style={{ color: 'var(--accent-amber)', fontWeight: 600 }}>
                       "{iss.suggested_fix}"
                     </span>
                   </div>

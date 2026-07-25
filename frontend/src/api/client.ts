@@ -3,12 +3,13 @@ import { PerformanceBrief } from '../types';
 const API_BASE = '/api';
 
 export async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
+  const { headers: customHeaders, ...restOptions } = options || {};
   const response = await fetch(`${API_BASE}${url}`, {
+    ...restOptions,
     headers: {
       'Content-Type': 'application/json',
-      ...options?.headers,
+      ...(customHeaders as Record<string, string>),
     },
-    ...options,
   });
 
   if (!response.ok) {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, Layers, PlusCircle } from 'lucide-react';
+import { Plus, Zap, PlusCircle } from 'lucide-react';
 import { Series } from '../types';
 
 interface HeaderProps {
@@ -22,48 +22,65 @@ export const Header: React.FC<HeaderProps> = ({
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
-      padding: '1.25rem 0',
-      marginBottom: '1.5rem',
-      borderBottom: '1px solid var(--border-accent)',
+      padding: '0.9rem 0',
+      marginBottom: '1rem',
+      borderBottom: '1px solid var(--border-subtle)',
       position: 'relative',
       zIndex: 10,
     }}>
-      {/* Brand & Logo */}
+      {/* Brand */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '0.75rem',
-          textDecoration: 'none',
+          gap: '0.6rem',
         }}>
           <div style={{
-            width: '38px',
-            height: '38px',
-            borderRadius: 'var(--radius-sm)',
+            width: '32px',
+            height: '32px',
+            borderRadius: '8px',
             background: 'var(--accent-red)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: 'var(--shadow-glow)',
+            boxShadow: '0 0 12px rgba(217, 30, 54, 0.25)',
           }}>
-            <Layers size={22} color="#FFFFFF" />
+            <Zap size={16} color="#FFFFFF" strokeWidth={2.5} />
           </div>
           <div>
-            <h1 style={{ fontSize: '1.4rem', margin: 0, letterSpacing: '0.05em' }}>
-              POCKET<span style={{ color: 'var(--accent-red)' }}>VERSE</span>
+            <h1 style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: '1.15rem',
+              fontWeight: 700,
+              margin: 0,
+              letterSpacing: '-0.01em',
+              lineHeight: 1,
+            }}>
+              Pocket<span style={{ color: 'var(--accent-red)' }}>Verse</span>
             </h1>
-            <div className="eyebrow" style={{ fontSize: '0.6rem', marginTop: '2px', color: 'var(--ink-muted)' }}>
-              Creator Storytelling Command Center
+            <div style={{
+              fontSize: '0.58rem',
+              fontWeight: 500,
+              textTransform: 'uppercase',
+              letterSpacing: '0.08em',
+              color: 'var(--ink-muted)',
+              marginTop: '2px',
+            }}>
+              AI Production Studio
             </div>
           </div>
         </div>
 
-        {/* Series Switcher Dropdown */}
+        {/* Series Switcher */}
         {seriesList.length > 0 && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: '1rem' }}>
-            <span style={{ fontSize: '0.75rem', color: 'var(--ink-dim)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-              Active Series:
-            </span>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            marginLeft: '0.5rem',
+            paddingLeft: '1rem',
+            borderLeft: '1px solid var(--border-subtle)',
+          }}>
             <select
               value={selectedSeries?.id || ''}
               onChange={(e) => {
@@ -72,12 +89,13 @@ export const Header: React.FC<HeaderProps> = ({
               }}
               style={{
                 width: 'auto',
-                padding: '0.4rem 0.8rem',
-                fontSize: '0.85rem',
-                fontWeight: 600,
-                background: 'var(--bg-panel-elevated)',
-                border: '1px solid var(--border-accent)',
+                padding: '0.35rem 0.75rem',
+                fontSize: '0.8rem',
+                fontWeight: 500,
+                background: 'var(--bg-panel)',
+                border: '1px solid var(--border-default)',
                 color: 'var(--ink-primary)',
+                borderRadius: 'var(--radius-sm)',
               }}
             >
               {seriesList.map((s) => (
@@ -90,21 +108,21 @@ export const Header: React.FC<HeaderProps> = ({
         )}
       </div>
 
-      {/* Action Controls & Creator Badge */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+      {/* Actions */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
         {selectedSeries && onCreateEpisode && (
           <button
             className="btn btn-primary"
             onClick={onCreateEpisode}
-            style={{ background: 'var(--accent-red)', borderColor: 'var(--accent-red)', boxShadow: 'var(--shadow-glow)' }}
+            style={{ fontSize: '0.78rem' }}
           >
-            <PlusCircle size={16} />
-            Add New Episode
+            <PlusCircle size={14} />
+            New Episode
           </button>
         )}
 
-        <button className="btn btn-outline" onClick={onOpenNewSeriesModal}>
-          <Plus size={16} />
+        <button className="btn btn-outline" onClick={onOpenNewSeriesModal} style={{ fontSize: '0.78rem' }}>
+          <Plus size={14} />
           New Series
         </button>
       </div>

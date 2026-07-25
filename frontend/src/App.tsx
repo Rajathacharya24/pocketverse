@@ -7,11 +7,13 @@ import { FinishedEpisodeView } from './components/FinishedEpisodeView';
 import { WizardContainer } from './components/Wizard/WizardContainer';
 import { AudioStudioModal } from './components/AudioStudioModal';
 import { CreatorDashboard } from './components/CreatorDashboard';
+import { LandingPage } from './components/LandingPage';
 import { Series, Episode, AnalysisRun } from './types';
 import { api } from './api/client';
-import { RotateCw, PlusCircle, LayoutDashboard, FileText } from 'lucide-react';
+import { RotateCw, LayoutDashboard, FileText } from 'lucide-react';
 
 export function App() {
+  const [showLanding, setShowLanding] = useState<boolean>(true);
   const [seriesList, setSeriesList] = useState<Series[]>([]);
   const [selectedSeriesId, setSelectedSeriesId] = useState<string | null>(null);
   const [seriesData, setSeriesData] = useState<Series | null>(null);
@@ -171,6 +173,10 @@ export function App() {
     }
   };
 
+  if (showLanding) {
+    return <LandingPage onEnterDashboard={() => setShowLanding(false)} />;
+  }
+
   return (
     <div className="app-container">
       <Header
@@ -185,30 +191,51 @@ export function App() {
       />
 
       {/* Creator Navigation Bar */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.75rem' }}>
-        <div style={{ display: 'flex', gap: '0.65rem' }}>
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        marginBottom: '0.85rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.6rem',
+      }}>
+        <div style={{ display: 'flex', gap: '0.4rem' }}>
           <button
-            className={viewMode === 'dashboard' ? 'btn btn-primary' : 'btn btn-secondary'}
             onClick={() => setViewMode('dashboard')}
-            style={{ fontSize: '0.8rem', padding: '0.45rem 1rem' }}
+            style={{
+              fontSize: '0.75rem', padding: '0.4rem 0.85rem',
+              background: viewMode === 'dashboard' ? 'var(--accent-red-dim)' : 'transparent',
+              color: viewMode === 'dashboard' ? 'var(--accent-red)' : 'var(--ink-secondary)',
+              border: `1px solid ${viewMode === 'dashboard' ? 'rgba(217,30,54,0.2)' : 'transparent'}`,
+              borderRadius: 'var(--radius-sm)',
+              cursor: 'pointer', fontWeight: 600,
+              display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
+              transition: 'all 0.15s ease',
+              fontFamily: 'var(--font-body)',
+            }}
           >
-            <LayoutDashboard size={15} /> Creator Dashboard
+            <LayoutDashboard size={13} /> Dashboard
           </button>
 
           {currentEpisode && (
             <button
-              className={viewMode === 'editor' ? 'btn btn-primary' : 'btn btn-secondary'}
               onClick={() => setViewMode('editor')}
-              style={{ fontSize: '0.8rem', padding: '0.45rem 1rem' }}
+              style={{
+                fontSize: '0.75rem', padding: '0.4rem 0.85rem',
+                background: viewMode === 'editor' ? 'var(--accent-red-dim)' : 'transparent',
+                color: viewMode === 'editor' ? 'var(--accent-red)' : 'var(--ink-secondary)',
+                border: `1px solid ${viewMode === 'editor' ? 'rgba(217,30,54,0.2)' : 'transparent'}`,
+                borderRadius: 'var(--radius-sm)',
+                cursor: 'pointer', fontWeight: 600,
+                display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
+                transition: 'all 0.15s ease',
+                fontFamily: 'var(--font-body)',
+              }}
             >
-              <FileText size={15} /> Edit Episode {currentEpisode.episode_number}: "{currentEpisode.title}"
+              <FileText size={13} /> Ep {currentEpisode.episode_number}: {currentEpisode.title}
             </button>
           )}
         </div>
 
         {seriesData && (
-          <div style={{ fontSize: '0.8rem', color: 'var(--ink-muted)' }}>
-            Active Series: <strong>{seriesData.title}</strong> ({seriesData.episodes?.length || 0} Episodes)
+          <div style={{ fontSize: '0.72rem', color: 'var(--ink-muted)' }}>
+            {seriesData.title} · {seriesData.episodes?.length || 0} episodes
           </div>
         )}
       </div>
@@ -234,7 +261,7 @@ export function App() {
               <RotateCw size={32} className="spin" style={{ marginBottom: '1rem', color: 'var(--accent-red)' }} />
               <div>Loading PocketVerse Creator Command Center...</div>
             </div>
-          ) : viewMode === 'dashboard' ? (
+          ) : viewMode === 'dashboard' || !currentEpisode ? (
             <CreatorDashboard
               series={seriesData}
               seriesList={seriesList}
@@ -256,14 +283,14 @@ export function App() {
                 if (selectedSeriesId) await loadSeriesDetails(selectedSeriesId);
               }}
             />
-          ) : viewMode === 'wizard' && currentEpisode ? (
+          ) : viewMode === 'wizard' ? (
             <WizardContainer
               episode={currentEpisode}
               initialStep={wizardStartStep}
               onClose={() => setViewMode('dashboard')}
               onComplete={handleWizardComplete}
             />
-          ) : viewMode === 'finalized' && currentEpisode ? (
+          ) : viewMode === 'finalized' ? (
             <FinishedEpisodeView
               episode={currentEpisode}
               seriesTitle={seriesData?.title || 'Series'}
@@ -271,34 +298,12 @@ export function App() {
               onBackToEditor={() => handleLaunchWizard(1)}
               onOpenAudioStudio={() => handleOpenAudioStudio(currentEpisode)}
             />
-          ) : currentEpisode ? (
+          ) : (
             <EpisodeEditor
               episode={currentEpisode}
               onSaveContent={handleSaveEpisodeContent}
               onLaunchWizard={() => handleLaunchWizard(1)}
               onViewFinalized={() => setViewMode('dashboard')}
-            />
-          ) : (
-            <CreatorDashboard
-              series={seriesData}
-              seriesList={seriesList}
-              selectedEpisodeId={selectedEpisodeId}
-              onSelectSeries={(s) => setSelectedSeriesId(s.id)}
-              onSelectEpisode={(epId) => {
-                setSelectedEpisodeId(epId);
-                setViewMode('editor');
-              }}
-              onCreateEpisode={handleCreateEpisode}
-              onOpenNewSeriesModal={() => setIsSeriesModalOpen(true)}
-              onDeleteEpisode={handleDeleteEpisode}
-              onOpenAudioStudio={handleOpenAudioStudio}
-              onOpenWizard={(ep) => {
-                setSelectedEpisodeId(ep.id);
-                handleLaunchWizard(1);
-              }}
-              onRefreshSeries={async () => {
-                if (selectedSeriesId) await loadSeriesDetails(selectedSeriesId);
-              }}
             />
           )}
         </div>

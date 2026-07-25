@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ToneRemixResult } from '../../types';
-import { Wand2, Check, ArrowRight, X, RefreshCcw, FastForward } from 'lucide-react';
+import { Wand2, Check, ArrowRight, FastForward } from 'lucide-react';
 import { AgenticTelemetryHud } from '../AgenticTelemetryHud';
 
 interface Step3ToneRemixProps {

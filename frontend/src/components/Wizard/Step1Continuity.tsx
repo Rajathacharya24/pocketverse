@@ -194,7 +194,7 @@ export const Step1Continuity: React.FC<Step1ContinuityProps> = ({
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxHeight: '340px', overflowY: 'auto' }}>
         {issues.length === 0 ? (
           <div className="panel" style={{ textAlign: 'center', padding: '2rem', color: 'var(--ink-muted)' }}>
-            <ShieldCheck size={32} color="#10B981" style={{ marginBottom: '0.5rem' }} />
+            <ShieldCheck size={32} color="var(--accent-red)" style={{ marginBottom: '0.5rem' }} />
             <p>Clean Continuity! No plot holes or timeline contradictions detected.</p>
           </div>
         ) : (
@@ -218,7 +218,7 @@ export const Step1Continuity: React.FC<Step1ContinuityProps> = ({
                     padding: '0.15rem 0.5rem',
                     borderRadius: 'var(--radius-pill)',
                     background: iss.severity === 'critical' ? 'var(--accent-red)' : 'rgba(217, 119, 6, 0.2)',
-                    color: iss.severity === 'critical' ? '#FFF' : '#FBBF24',
+                    color: iss.severity === 'critical' ? '#FFF' : 'var(--accent-amber)',
                   }}>
                     {iss.severity}
                   </span>
@@ -303,7 +303,7 @@ export const Step1Continuity: React.FC<Step1ContinuityProps> = ({
             </div>
 
             {prevSavedMsg && (
-              <div style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10B981', padding: '0.65rem 1rem', borderRadius: 'var(--radius-sm)', marginBottom: '1rem', fontSize: '0.85rem' }}>
+              <div style={{ background: 'rgba(217, 30, 54, 0.08)', color: 'var(--accent-red)', padding: '0.65rem 1rem', borderRadius: 'var(--radius-sm)', marginBottom: '1rem', fontSize: '0.85rem' }}>
                 {prevSavedMsg}
               </div>
             )}

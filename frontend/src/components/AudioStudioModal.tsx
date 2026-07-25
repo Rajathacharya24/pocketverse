@@ -348,7 +348,7 @@ export const AudioStudioModal: React.FC<AudioStudioModalProps> = ({
                 <CheckCircle2 size={12} /> Published Audio Episode
               </span>
             ) : audioStatus === 'ready_to_review' ? (
-              <span className="badge-pill" style={{ borderColor: '#8B5CF6', color: '#A78BFA', background: 'rgba(139, 92, 246, 0.15)' }}>
+              <span className="badge-pill" style={{ borderColor: 'var(--accent-amber)', color: 'var(--accent-amber)', background: 'rgba(217, 119, 6, 0.12)' }}>
                 <Sparkles size={12} /> Ready to Review (Not Published)
               </span>
             ) : generating ? (
@@ -373,7 +373,7 @@ export const AudioStudioModal: React.FC<AudioStudioModalProps> = ({
             <AgenticTelemetryHud
               jobId={episode.id}
               title="HIGH-SPEED OPENAI MALE AUDIO SYNTHESIS & SOUNDSCAPE ENGINE"
-              defaultSubstep="OpenAI Onyx + ffmpeg"
+              defaultSubstep="OpenAI Voice Engine + ffmpeg"
             />
           )}
 
@@ -396,7 +396,7 @@ export const AudioStudioModal: React.FC<AudioStudioModalProps> = ({
               border: '1px solid rgba(217, 119, 6, 0.4)',
               padding: '0.75rem 1rem',
               borderRadius: 'var(--radius-sm)',
-              color: '#FBBF24',
+              color: 'var(--accent-amber)',
               fontSize: '0.85rem',
             }}>
               {playbackError}
@@ -442,7 +442,7 @@ export const AudioStudioModal: React.FC<AudioStudioModalProps> = ({
                     className="btn btn-primary"
                     onClick={() => setShowConfirmPublish(true)}
                     disabled={publishing}
-                    style={{ background: '#10B981', borderColor: '#10B981', padding: '0.65rem 1.25rem' }}
+                    style={{ background: 'var(--accent-red)', borderColor: 'var(--accent-red)', padding: '0.65rem 1.25rem' }}
                   >
                     <CheckCircle2 size={16} /> Publish Audio Episode
                   </button>
@@ -465,18 +465,22 @@ export const AudioStudioModal: React.FC<AudioStudioModalProps> = ({
                 gap: '4px',
                 padding: '0 1rem',
               }}>
-                {Array.from({ length: 36 }).map((_, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      flex: 1,
-                      height: isPlaying ? `${Math.floor(Math.random() * 28 + 8)}px` : '10px',
-                      background: isPlaying ? 'var(--accent-red)' : 'var(--ink-dim)',
-                      borderRadius: '2px',
-                      transition: 'height 0.15s ease',
-                    }}
-                  />
-                ))}
+                {Array.from({ length: 36 }).map((_, i) => {
+                  // Deterministic bar heights based on index to avoid Math.random() in render
+                  const barHeight = isPlaying ? ((i * 7 + i * i * 3) % 24 + 8) : 10;
+                  return (
+                    <div
+                      key={i}
+                      style={{
+                        flex: 1,
+                        height: `${barHeight}px`,
+                        background: isPlaying ? 'var(--accent-red)' : 'var(--ink-dim)',
+                        borderRadius: '2px',
+                        transition: 'height 0.15s ease',
+                      }}
+                    />
+                  );
+                })}
               </div>
             </div>
           ) : (
@@ -711,14 +715,14 @@ export const AudioStudioModal: React.FC<AudioStudioModalProps> = ({
         {showConfirmPublish && (
           <div style={{
             padding: '1.25rem 1.75rem',
-            background: 'rgba(16, 185, 129, 0.12)',
-            borderTop: '1px solid #10B981',
+            background: 'rgba(217, 30, 54, 0.08)',
+            borderTop: '1px solid var(--accent-red)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
           }}>
             <div>
-              <div style={{ fontWeight: 700, color: '#10B981', fontSize: '0.95rem' }}>
+              <div style={{ fontWeight: 700, color: 'var(--accent-red)', fontSize: '0.95rem' }}>
                 Confirm Audio Episode Publication?
               </div>
               <div style={{ fontSize: '0.75rem', color: 'var(--ink-muted)', marginTop: '0.2rem' }}>
@@ -734,7 +738,7 @@ export const AudioStudioModal: React.FC<AudioStudioModalProps> = ({
                 className="btn btn-primary"
                 onClick={handlePublishAudio}
                 disabled={publishing}
-                style={{ background: '#10B981', borderColor: '#10B981' }}
+                style={{ background: 'var(--accent-red)', borderColor: 'var(--accent-red)' }}
               >
                 {publishing ? 'Publishing...' : 'Confirm & Publish Live'}
               </button>
