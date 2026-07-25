@@ -39,11 +39,12 @@ export const Header: React.FC<HeaderProps> = ({
             width: '32px',
             height: '32px',
             borderRadius: '8px',
-            background: 'var(--primary)',
+            
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 0 12px rgba(217, 30, 54, 0.25)',
+            background: 'linear-gradient(135deg, var(--accent-violet), var(--accent-indigo))',
+            boxShadow: '0 0 12px rgba(139, 92, 246, 0.25)',
           }}>
             <Zap size={16} color="#FFFFFF" strokeWidth={2.5} />
           </div>
