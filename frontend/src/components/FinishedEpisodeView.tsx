@@ -186,7 +186,7 @@ export const FinishedEpisodeView: React.FC<FinishedEpisodeViewProps> = ({
         >
           EN
         </button>
-        {targetLanguages.map(langCode => {
+        {Array.from(new Set([...targetLanguages, ...translations.map(t => t.language)])).map(langCode => {
           const langInfo = AVAILABLE_LANGUAGES.find(l => l.code === langCode);
           return (
             <button 
@@ -201,7 +201,7 @@ export const FinishedEpisodeView: React.FC<FinishedEpisodeViewProps> = ({
         })}
 
         <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.5rem' }}>
-          {AVAILABLE_LANGUAGES.filter(l => !targetLanguages.includes(l.code)).map(lang => (
+          {AVAILABLE_LANGUAGES.filter(l => !Array.from(new Set([...targetLanguages, ...translations.map(t => t.language)])).includes(l.code)).map(lang => (
             <button 
               key={lang.code}
               className="btn btn-outline" 
