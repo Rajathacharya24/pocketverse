@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { FileText, CheckCircle, Sparkles, Mic, UploadCloud, Terminal, Zap, ArrowRight, Headphones } from 'lucide-react';
-import { HeroVisual } from './HeroVisual';
 
 interface LandingPageProps {
   onEnterDashboard: () => void;
@@ -69,7 +68,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDashboard }) =>
           font-family: var(--font-display);
           font-weight: 800;
           font-size: 1.15rem;
-          letter-spacing: -0.02em;
+          letter-spacing: normal;
           color: var(--text-main);
         }
         .lp-nav-brand-icon {
@@ -175,8 +174,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDashboard }) =>
           font-family: var(--font-display);
           font-size: clamp(2.2rem, 5.5vw, 3.5rem);
           font-weight: 800;
-          letter-spacing: -0.03em;
-          line-height: 1.05;
+          letter-spacing: normal;
+          line-height: 1.15;
           margin-bottom: 1.25rem;
           animation: reveal-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
           opacity: 0;
@@ -260,7 +259,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDashboard }) =>
           font-family: var(--font-display);
           font-size: 1.5rem;
           font-weight: 800;
-          letter-spacing: -0.02em;
+          letter-spacing: normal;
         }
         .stat-label {
           font-size: 0.72rem;
@@ -454,9 +453,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDashboard }) =>
           </div>
         </div>
 
-        <div className="hero-visual-wrap">
-          <HeroVisual reducedMotion={reducedMotion} />
-        </div>
       </section>
 
       {/* Terminal */}
@@ -515,7 +511,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterDashboard }) =>
               fontFamily: 'var(--font-display)',
               fontSize: 'clamp(1.5rem, 3vw, 2.2rem)',
               fontWeight: 800,
-              letterSpacing: '-0.03em',
+              letterSpacing: 'normal',
+              lineHeight: 1.15,
               marginTop: '0.5rem',
               color: 'var(--text-main)',
             }}>

@@ -102,7 +102,7 @@ export const WizardContainer: React.FC<WizardContainerProps> = ({
   };
 
   return (
-    <div className="modal-overlay" style={{ padding: '1rem', overflowY: 'auto' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
       <div style={{
         background: 'var(--bg-void)',
         border: '1px solid var(--border-accent-strong)',
@@ -150,9 +150,6 @@ export const WizardContainer: React.FC<WizardContainerProps> = ({
             </div>
           </div>
 
-          <button onClick={onClose} className="btn-outline" style={{ border: 'none', padding: '0.4rem' }}>
-            <X size={20} />
-          </button>
         </div>
 
         {/* Stepper Steps Bar */}

@@ -1,181 +1,104 @@
-# 🌌 PocketVerse — AI Serialized Storytelling & Audio Drama Command Center
+# PocketVerse
+![Build Status](https://img.shields.io/badge/build-passing-brightgreen) ![Hackathon](https://img.shields.io/badge/hackathon-submission-blue) ![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black) ![TypeScript](https://img.shields.io/badge/TypeScript-Ready-3178C6?logo=typescript&logoColor=white) ![Node.js](https://img.shields.io/badge/Node.js-Express-339933?logo=nodedotjs&logoColor=white)
 
-> **PocketVerse** is an all-in-one AI production studio designed for storytellers, showrunners, and web-fiction writers. It allows creators to write multi-episode series, catch narrative plot holes across episodes, rewrite stories into high-contrast genres, and automatically render full cinematic audio dramas featuring **Deep OpenAI Male Narrator Voices** mixed with **Natural Wind Breeze Soundscapes**.
+PocketVerse is an AI production studio for serialized fiction and audio drama creators that replaces a five-person creative team with a single, highly-orchestrated platform. It automatically cross-checks continuity between episodes, copyedits dialogue, directs genre-specific tone remixes, and renders cinematic multi-language audio dramas in seconds.
 
----
-
-## 💡 What is PocketVerse? (The Simple Explanation)
-
-Imagine you are writing a superhero or horror story series on your computer:
-1. **The Problem**: When you reach Episode 3, you might forget a detail from Episode 1 (like a character holding a knife in the dark, but suddenly appearing in bright daylight). Also, hiring voice actors and sound engineers to record audio costs thousands of dollars!
-2. **The Solution**: **PocketVerse** acts as your **Personal AI Director & Audio Soundstage**:
-   - **AI Showrunner (GPT-4o)** reads your previous episodes and points out plot holes, character voice issues, and rates your ending cliffhangers on a scale of 1 to 10.
-   - **AI Genre Transformer** can rewrite your story into **Noir**, **Horror**, **Funny**, **Drama**, or **Sci-Fi** with one click.
-   - **OpenAI Male Voice Engine** turns your manuscript into a deep, cinematic male voice narration.
-   - **Acoustic Soundscape Engine** synthesizes natural wind breeze sound beds so your story feels like a movie audio drama!
+*[Insert link to 2-minute demo video here]*
 
 ---
 
-## ✨ Key Features & Breakthrough Innovations
+## The Problem
+Producing high-quality serialized audio fiction is cost-prohibitive and technically demanding for independent creators. Hiring voice actors and sound engineers for multi-episode runs breaks most budgets, while maintaining strict narrative continuity (character voices, timeline consistency, plot beats) across dozens of self-written episodes becomes a massive logistical burden that often leads to plot holes and abandoned series. 
 
-### 📊 1. Creator Command Center & Analytics Dashboard
-- **Live Creator Analytics**: Real-time metric cards showing:
-  - **Total Episodes Created**
-  - **Manuscript Words Written**
-  - **Male Voice Narration Coverage** (Count of voice tracks ready vs pending)
-  - **Estimated Audio Runtime**
-- **Prominent `+ Add New Episode` Action**: Located right at the top header for instant creation.
-- **Episode Directory List & Quick Actions**:
-  - **`▶️ Play Episode Audio`**: Primary action button when audio is ready.
-  - **`🎙️ Generate Directed Audio`**: Primary action button when audio is pending.
-  - **📝 Edit Script Text**: Inline manuscript editor modal.
-  - **🚀 Improvised Voice Re-Gen**: Instant audio re-generation matching updated text!
-  - **🗑️ Delete Episode**: Clean episode deletion.
+## The Solution
+PocketVerse collapses an entire audio production studio into a five-role AI pipeline:
+- **Continuity Editor**: Cross-checks new episodes against previous ones for plot holes.
+- **Copyeditor**: Cleans up grammar and dialogue cadence.
+- **Genre Director**: Remixes the episode into distinct atmospheres while keeping the plot intact.
+- **Voice Director**: Synthesizes and mixes the master audio track with soundscapes.
+- **Localization Director**: Translates and produces native-sounding audio in regional languages.
 
----
+## Key Features
 
-### 🧙‍♂️ 2. The 4-Step AI Diagnostic & Writing Wizard
-Creators pass their manuscripts through a guided 4-step production pipeline:
+### 1. Continuity Editor (GPT-4o)
+- **Context-Aware Review**: Compares the current script against the preceding episode to identify timeline errors and character voice breaks.
+- **Cliffhanger Scoring**: Evaluates the narrative hook at the end of the episode on a 1-10 scale and offers an automated rewrite if the tension falls flat.
+- **Explicit Approval**: AI suggestions are presented to the creator with a suggested fix. Changes are only applied if explicitly accepted.
 
-- **Step 1: Character Voice & Multi-Episode Continuity Pass (`GPT-4o`)**:
-  - Compares Episode $N$ against Episode $N-1$ to catch plot holes, character motivation flaws, and timeline jumps.
-  - Rates cliffhanger hooks ($1$ to $10$) and offers master editor rewrites.
-  - Includes an inline drawer to edit Episode $N-1$ directly if previous context needs updating!
-- **Step 2: Dialogue Cadence & Grammar Polish (`GPT-4o-mini`)**:
-  - Scans dialogue delivery, vocal rhythm, and punctuation with 1-click accept toggles.
-- **Step 3: Optional Genre & Atmosphere Remix (`GPT-4o`)**:
-  - Improvise script into **Noir**, **Horror**, **Funny**, **Drama**, or **Sci-Fi** while strictly preserving character identities and plot beats.
-- **Step 4: Finalize & Save Manuscript**:
-  - Updates script status to `FINALIZED` and unlocks full Audio Production.
+### 2. Copyeditor (GPT-4o-mini)
+- **Dialogue & Pacing**: Scans the manuscript specifically for dialogue cadence and grammatical consistency, allowing creators to accept or reject edits line-by-line.
 
----
+### 3. Genre Director (GPT-4o)
+- **Atmosphere Remixing**: Improvise a script into Noir, Horror, Funny, Drama, or Sci-Fi. The director preserves core plot beats and character identities while altering the descriptive vocabulary and pacing.
 
-### 🎙️ 3. OpenAI High-Definition Male Narrator Voice Engine
-- **Tone-Matched Male Voice Selection**:
-  - **`onyx`**: Deep, authoritative male baritone (perfect for **Horror**, **Vikrama & Betala**, **Noir**, and **Mysteries**).
-  - **`echo`**: Smooth, resonant male storyteller (perfect for **Drama**, **Sci-Fi**, and **Thrillers**).
-  - **`fable`**: Expressive, dynamic male narrator (perfect for **Comedy** and **Fables**).
-- **Loud & Dominant Narration Boost (+8dB / 2.5x)**:
-  - Voice narration volume is boosted $2.5\times$ so character speech is 100% crisp, clear, and dominant over background soundscapes.
+### 4. Voice Director (ElevenLabs & ffmpeg)
+- **Parallel Chunked Rendering**: The pipeline splits the finalized script and executes TTS generation concurrently. It renders an 8-minute episode in approximately 10 seconds.
+- **Custom Soundscape Mixing**: Uses a Paul Kellet Pink Noise algorithm to generate a natural wind ambient soundscape bed. 
+- **Automated Mixing**: `ffmpeg` ducks the soundscape behind the narration and strictly caps the ambient bed to the exact duration of the generated speech. 
+- **Live Telemetry HUD**: Creators watch a dual-ring visualizer and real-time backend stream logs during generation.
+- **Deliberate Publishing**: Generating audio is decoupled from publishing. Creators must explicitly trigger a separate publish action.
 
----
+### 5. Localization Director
+- **Code-Mixed Translation**: Translates finalized episodes into Kannada, Tamil, and Telugu using natural, spoken regional phrasing rather than stiff textbook translation.
+- **Native Audio Production**: Renders narrated audio using ElevenLabs' native multi-language voices. Each localized version operates on its own independent generation and publishing lifecycle.
 
-### ⚡ 4. High-Speed Parallel Concurrency Audio Generator
-- **Parallel Promise Execution (`Promise.all`)**:
-  - Manuscripts are automatically split into safe 3,500-character segments.
-  - All text chunks and natural wind soundscapes generate **simultaneously in parallel**, rendering an 8-minute audio drama episode in **~10 seconds**!
-- **`ffmpeg-static` Audio Ducking & Duration Capping**:
-  - Loops background soundscapes for the exact duration of narration without endless looping files.
-
----
-
-### 🔊 5. Paul Kellet Pink Noise Natural Wind Soundscape Bed
-- **Pure Natural Acoustic Synthesis**:
-  - Implements Paul Kellet's Pink Noise algorithm ($-3\text{ dB/octave}$ power spectral density) + $0.07\text{ Hz}$ soft breeze swell modulation.
-  - Eliminates artificial sine wave beep tones or whistling noise completely.
-
----
-
-### 🌀 6. ElevenLabs-Style Dual-Ring Agentic Telemetry HUD
-- **Dual-Ring Rolling Buffer & Equalizer Visualizer**:
-  - Smooth rotating 360° gradient conic buffer ring (`var(--accent-red)` -> `#8B5CF6`).
-  - Inner glowing core with animated pulsing equalizer audio bars (`||||`).
-- **Clean Real-Time Backend Stream Logs**:
-  - Wipes old logs clean when a new task starts, streaming exact stage messages:
-    - `⚡ Initializing AI Production Engine...`
-    - `🎙️ Synthesizing OpenAI Male Voice (Onyx Baritone)...`
-    - `🔊 Synthesizing Wind Breeze Soundscape Bed...`
-    - `🎛️ ffmpeg-static Mixing Master Audio Track...`
-    - `✨ Preparing Final Version & Master Track...`
-
----
-
-## 🛠️ System Architecture & Tech Stack
+## System Architecture
 
 ```mermaid
 graph TD
-    User["Creator / Author"] --> Frontend["React 18 SPA (Vite + TypeScript)"]
-    Frontend --> Dashboard["Creator Command Center & Analytics"]
+    Creator["Creator"] --> Dashboard["Command Center"]
     Dashboard --> Wizard["4-Step AI Diagnostic Wizard"]
-    Wizard -->|"GPT-4o & GPT-4o-mini"| Backend["Express REST API Backend"]
-    Backend --> SQLite[("SQLite Database")]
-    Dashboard --> AudioStudio["Audio Production Studio"]
-    AudioStudio -->|"Parallel Concurrency Promise.all"| OpenAITTS["OpenAI High-Definition Male TTS (onyx / echo / fable)"]
-    AudioStudio --> PinkNoise["Pink Noise Natural Wind Synthesizer"]
-    OpenAITTS & PinkNoise --> FFmpeg["ffmpeg-static Master Ducking Mixer"]
-    FFmpeg --> MasterTrack["Ready / Published Audio Master (.mp3)"]
+    
+    subgraph AI Pipeline
+        Wizard -->|Continuity & Tone| GPT4o["GPT-4o"]
+        Wizard -->|Grammar| GPT4oMini["GPT-4o-mini"]
+    end
+    
+    GPT4o & GPT4oMini --> FinalizedScript["Finalized Script"]
+    
+    FinalizedScript --> AudioEngine["Audio Production Engine"]
+    FinalizedScript --> Localizer["Localization Director"]
+    
+    subgraph Audio Generation
+        AudioEngine -->|Parallel Chunks| ElevenLabs["ElevenLabs TTS"]
+        AudioEngine -->|Pink Noise| Soundscape["Ambient Bed Generator"]
+        ElevenLabs & Soundscape --> FFmpeg["ffmpeg Mixer"]
+    end
+    
+    Localizer -->|Kannada/Tamil/Telugu| AudioGeneration
+    
+    FFmpeg --> Review["Creator Review"]
+    Review -->|Explicit Action| Publish["Published Master Track"]
 ```
 
-### Stack Components:
-- **Frontend**: React 18, Vite, TypeScript, Lucide Icons, Pure Vanilla CSS Tech-Noir Design System.
-- **Backend**: Node.js, Express, TypeScript, SQLite (`better-sqlite3` driver).
-- **AI Models**: OpenAI `gpt-4o`, `gpt-4o-mini`, and OpenAI Speech API (`tts-1`).
-- **Audio Processing**: `ffmpeg-static`, WAV PCM Synthesizer.
+## Tech Stack
 
----
+| Component | Technology | Why it was chosen |
+| :--- | :--- | :--- |
+| **Frontend** | React 18 + Vite | Fast HMR during development and stable SPA routing. |
+| **Styling** | Vanilla CSS | Strict adherence to the tech-noir design system without framework overhead. |
+| **Backend** | Express + TypeScript | Lightweight, strictly-typed request handling for the AI orchestrator. |
+| **Database** | SQLite | Zero-config persistent local storage ideal for a hackathon environment. |
+| **Writing Pipeline** | OpenAI GPT-4o | Superior instruction-following for complex continuity and tone-remix tasks. |
+| **Copyediting** | OpenAI GPT-4o-mini | Low latency and cost-effective for straightforward grammar passes. |
+| **Audio Synthesis** | ElevenLabs TTS | State-of-the-art prosody and multi-language support. |
+| **Audio Mixing** | ffmpeg | Reliable, scriptable command-line audio ducking and concatenation. |
 
-## 🚀 How to Run PocketVerse
+## Quickstart
 
-Run the entire application (Backend Server + Frontend Dev Server) with a single command:
+Run the entire stack (Express backend and Vite frontend) with a single command. The script handles dependency installation and concurrent process management automatically.
 
 ```bash
+# Clone the repository and run the start script
 ./start.sh
 ```
 
-- **Frontend**: [http://localhost:3000/](http://localhost:3000/)
-- **Backend API**: `http://127.0.0.1:5000`
+- **Frontend Application**: `http://localhost:3000`
+- **Backend API Server**: `http://localhost:5000`
 
----
+## Known Limitations & What's Next
+- **Continuity Memory Bound**: The Continuity Editor currently only checks the manuscript against the *immediately previous* episode (Episode N-1). It does not maintain a global context window of the entire series. Moving to an RAG (Retrieval-Augmented Generation) system to check global series bibles is the next planned improvement.
+- **Single Ambient Bed**: The audio engine currently relies exclusively on a generated wind soundscape. Future updates will introduce dynamic Foley insertion based on script content.
 
-## 🎮 How to Use PocketVerse (Step-by-Step Guide)
-
-1. **Open PocketVerse**: Go to [http://localhost:3000/](http://localhost:3000/) in your browser.
-2. **Create a Series**: Click **"+ New Series"** and enter your series title (e.g. *Vikrama & Betala Tales*).
-3. **Add an Episode**: Click **"+ Add New Episode"** at the top of your Creator Dashboard.
-4. **Run AI Diagnostics**:
-   - Click **"Run 4-Step AI Wizard"**.
-   - Review plot continuity, accept grammar fixes, or remix into **Noir** / **Horror**.
-   - Click **"Save & Finalize Text Script"**.
-5. **Generate Directed Male Audio Track**:
-   - Click **"Generate Directed Audio Master"**.
-   - Watch the **ElevenLabs-Style Dual-Ring Telemetry HUD** process speech and wind soundscapes in parallel!
-6. **Play & Publish**: Click **Play** to listen to your deep male voice audio drama episode, then click **"Publish Audio Episode"**!
-
----
-
-## 📡 REST API Specifications
-
-All API endpoints run at `http://127.0.0.1:5000/api`:
-
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `GET` | `/api/series` | Fetch all story series |
-| `POST` | `/api/series` | Create a new story series |
-| `GET` | `/api/series/:id` | Fetch series details with episodes |
-| `POST` | `/api/series/:seriesId/episodes` | Create a new episode |
-| `GET` | `/api/episodes/:id` | Fetch episode details & audio status |
-| `PUT` | `/api/episodes/:id` | Update episode title & manuscript content |
-| `DELETE` | `/api/episodes/:id` | Delete episode |
-| `POST` | `/api/episodes/:id/analysis/continuity` | Step 1 Continuity check against Episode N-1 |
-| `POST` | `/api/episodes/:id/analysis/grammar` | Step 2 Dialogue pacing & grammar check |
-| `POST` | `/api/episodes/:id/analysis/tone` | Step 3 Genre Remix (`Noir`, `Horror`, `Funny`, `Drama`, `Sci-Fi`) |
-| `POST` | `/api/episodes/:id/analysis/save` | Step 4 Finalize text script |
-| `POST` | `/api/episodes/:id/audio/direction` | Generate Audio Performance Brief & Foley Cues |
-| `POST` | `/api/episodes/:id/audio/generate` | Render master audio track (Parallel OpenAI TTS + Wind Bed + ffmpeg) |
-| `GET` | `/api/episodes/:id/audio` | Fetch latest audio render & status |
-| `POST` | `/api/episodes/:id/audio/publish` | Explicit publish action |
-| `GET` | `/api/progress/:jobId` | Stream real-time telemetry logs & process stages |
-
----
-
-## 🏆 Why PocketVerse Stands Out
-
-- **100% Operational & Production Ready**: No dummy mock data or placeholders — every AI step executes real LLM & TTS pipelines.
-- **Deep Male Narration Voice**: Delivers rich male baritone voices (`onyx`, `echo`, `fable`) tailored to story genre.
-- **High Concurrency Parallel Speed**: Synthesizes 8-minute scripts in ~10 seconds.
-- **Cinematic Soundscape Bed**: Natural acoustic wind breezing mixed at $+8\text{ dB}$ narration dominance.
-- **Creator Command Center**: Full episode analytics, inline text editing, and improvised voice re-generation.
-
----
-
-*Made with ❤️ for Hackathon Storytellers & Showrunners.*
+## Team
+Built for the [Insert Hackathon Name] hackathon. Focusing on AI-powered creator workflows and breaking down barriers to audio production.

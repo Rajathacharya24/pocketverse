@@ -91,7 +91,7 @@ export const CreatorDashboard: React.FC<CreatorDashboardProps> = ({
             </div>
             <h2 style={{
               fontFamily: 'var(--font-display)', fontSize: '1.6rem', fontWeight: 700,
-              marginBottom: '0.65rem', letterSpacing: '-0.01em',
+              marginBottom: '0.65rem', letterSpacing: 'normal',
             }}>
               Welcome to PocketVerse
             </h2>
@@ -249,7 +249,7 @@ export const CreatorDashboard: React.FC<CreatorDashboardProps> = ({
           </div>
           <h2 style={{
             fontFamily: 'var(--font-display)', fontSize: '1.45rem', fontWeight: 700,
-            margin: 0, letterSpacing: '-0.01em',
+            margin: 0, letterSpacing: 'normal',
           }}>
             {series.title}
           </h2>
@@ -338,16 +338,16 @@ export const CreatorDashboard: React.FC<CreatorDashboardProps> = ({
                 y1={24}
                 x2={135 + i * 150}
                 y2={24}
-                stroke={pipelineStages[i + 1]?.count > 0 ? '#D91E36' : '#3A2A2C'}
+                stroke={pipelineStages[i + 1]?.count > 0 ? 'var(--accent-red)' : 'var(--border-subtle)'}
                 strokeWidth={1.5}
                 strokeDasharray={pipelineStages[i + 1]?.count > 0 ? 'none' : '4 4'}
-                opacity={pipelineStages[i + 1]?.count > 0 ? 0.6 : 0.3}
+                opacity={pipelineStages[i + 1]?.count > 0 ? 0.6 : 1}
               />
             ))}
 
             {/* Tracing dot (animated when active) */}
             {hasActiveWork && (
-              <circle r="3" fill="#D91E36" opacity="0.8">
+              <circle r="3" fill="var(--accent-red)" opacity="0.8">
                 <animateMotion
                   dur="3s"
                   repeatCount="indefinite"
@@ -365,7 +365,7 @@ export const CreatorDashboard: React.FC<CreatorDashboardProps> = ({
                 <g key={stage.label}>
                   {/* Glow ring when active */}
                   {isActive && (
-                    <circle cx={cx} cy={24} r={18} fill="none" stroke="#D91E36" strokeWidth={1} opacity={0.3}>
+                    <circle cx={cx} cy={24} r={18} fill="none" stroke="var(--accent-red)" strokeWidth={1} opacity={0.3}>
                       <animate attributeName="r" values="18;22;18" dur="2s" repeatCount="indefinite" />
                       <animate attributeName="opacity" values="0.3;0.1;0.3" dur="2s" repeatCount="indefinite" />
                     </circle>
@@ -374,15 +374,15 @@ export const CreatorDashboard: React.FC<CreatorDashboardProps> = ({
                     cx={cx}
                     cy={24}
                     r={14}
-                    fill={hasCount ? 'rgba(217, 30, 54, 0.12)' : '#1F1718'}
-                    stroke={hasCount ? '#D91E36' : '#3A2A2C'}
+                    fill={hasCount ? 'rgba(217, 30, 54, 0.12)' : 'var(--bg-void)'}
+                    stroke={hasCount ? 'var(--accent-red)' : 'var(--border-subtle)'}
                     strokeWidth={1.5}
                   />
                   <text
                     x={cx}
                     y={21}
                     textAnchor="middle"
-                    fill={hasCount ? '#F2F0EF' : '#6E5F60'}
+                    fill={hasCount ? 'var(--accent-red)' : 'var(--ink-muted)'}
                     fontSize="11"
                     fontWeight="700"
                     fontFamily="'Archivo Black', sans-serif"
@@ -393,10 +393,10 @@ export const CreatorDashboard: React.FC<CreatorDashboardProps> = ({
                     x={cx}
                     y={33}
                     textAnchor="middle"
-                    fill={hasCount ? '#9C8C8D' : '#6E5F60'}
+                    fill={hasCount ? 'var(--ink-secondary)' : 'var(--ink-muted)'}
                     fontSize="7"
                     fontWeight="500"
-                    fontFamily="'Space Grotesk', sans-serif"
+                    fontFamily="'Inter', sans-serif"
                     letterSpacing="0.08em"
                   >
                     {stage.label.toUpperCase()}
@@ -429,6 +429,7 @@ export const CreatorDashboard: React.FC<CreatorDashboardProps> = ({
               {stat.icon}
             </div>
             <div>
+              <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--ink-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.1rem' }}>{stat.label}</div>
               <div style={{ fontSize: '1.5rem', fontWeight: 800, lineHeight: 1.1, fontFamily: 'var(--font-display)' }}>{stat.value}</div>
               <div style={{ fontSize: '0.72rem', fontWeight: 500, color: 'var(--ink-secondary)', marginTop: '0.15rem' }}>{stat.sub}</div>
             </div>
@@ -608,7 +609,7 @@ export const CreatorDashboard: React.FC<CreatorDashboardProps> = ({
                           <>
                             <span style={{ opacity: 0.3 }}>·</span>
                             <span style={{ color: 'var(--success)' }}>
-                              <Volume2 size={10} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '2px' }} />Audio ✓
+                              Audio ✓
                             </span>
                           </>
                         )}
@@ -636,7 +637,13 @@ export const CreatorDashboard: React.FC<CreatorDashboardProps> = ({
                         onClick={(e) => { e.stopPropagation(); activeLanguageTrack === 'en' ? onOpenAudioStudio(ep, e) : onSelectEpisode(ep.id, activeLanguageTrack); }}
                         style={{ fontSize: '0.72rem', padding: '0.4rem 0.85rem' }}
                       >
-                        <Volume2 size={12} /> Generate
+                        {activeLanguageTrack === 'en' ? (
+                          <><Mic size={12} /> Generate</>
+                        ) : ep.translations?.some(t => t.language === activeLanguageTrack) ? (
+                          <><Mic size={12} /> Generate Audio</>
+                        ) : (
+                          <><Globe size={12} /> Translate</>
+                        )}
                       </button>
                     )}
 

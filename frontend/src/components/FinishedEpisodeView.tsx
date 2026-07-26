@@ -8,8 +8,9 @@ interface FinishedEpisodeViewProps {
   seriesTitle: string;
   analysisRun?: any;
   onBackToEditor: () => void;
-  onOpenAudioStudio?: () => void;
+  onOpenAudioStudio?: (episode: Episode) => void;
   initialLanguage?: string;
+  targetLanguages?: string[];
 }
 
 const AVAILABLE_LANGUAGES = [
@@ -25,6 +26,7 @@ export const FinishedEpisodeView: React.FC<FinishedEpisodeViewProps> = ({
   onBackToEditor,
   onOpenAudioStudio,
   initialLanguage = 'en',
+  targetLanguages = [],
 }) => {
   const [activeLanguage, setActiveLanguage] = useState<string>(initialLanguage);
   const [translations, setTranslations] = useState<Translation[]>([]);
@@ -36,6 +38,10 @@ export const FinishedEpisodeView: React.FC<FinishedEpisodeViewProps> = ({
   useEffect(() => {
     loadTranslations();
   }, [episode.id]);
+
+  useEffect(() => {
+    setActiveLanguage(initialLanguage);
+  }, [initialLanguage]);
 
   const loadTranslations = async () => {
     try {
@@ -138,9 +144,7 @@ export const FinishedEpisodeView: React.FC<FinishedEpisodeViewProps> = ({
     <main style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '900px', margin: '0 auto', width: '100%' }}>
       {/* Navigation */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <button className="btn btn-outline" onClick={onBackToEditor} style={{ fontSize: '0.75rem' }}>
-          <ArrowLeft size={14} /> Back to Editor
-        </button>
+        <div></div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
           {activeLanguage === 'en' ? (
@@ -150,7 +154,7 @@ export const FinishedEpisodeView: React.FC<FinishedEpisodeViewProps> = ({
               </span>
 
               {onOpenAudioStudio && (
-                <button className="btn btn-primary" onClick={onOpenAudioStudio} style={{ fontSize: '0.75rem' }}>
+                <button className="btn btn-primary" onClick={() => onOpenAudioStudio(episode)} style={{ fontSize: '0.75rem' }}>
                   <Volume2 size={14} />
                   {episode.audio_status && episode.audio_status !== 'none' ? 'Audio Studio' : 'Generate Audio'}
                 </button>
@@ -182,22 +186,22 @@ export const FinishedEpisodeView: React.FC<FinishedEpisodeViewProps> = ({
         >
           EN
         </button>
-        {translations.map(t => {
-          const langInfo = AVAILABLE_LANGUAGES.find(l => l.code === t.language);
+        {targetLanguages.map(langCode => {
+          const langInfo = AVAILABLE_LANGUAGES.find(l => l.code === langCode);
           return (
             <button 
-              key={t.id}
-              className={`btn ${activeLanguage === t.language ? 'btn-primary' : 'btn-outline'}`}
-              onClick={() => setActiveLanguage(t.language)}
+              key={langCode}
+              className={`btn ${activeLanguage === langCode ? 'btn-primary' : 'btn-outline'}`}
+              onClick={() => setActiveLanguage(langCode)}
               style={{ padding: '0.4rem 1rem' }}
             >
-              {langInfo?.name || t.language}
+              {langInfo?.name || langCode}
             </button>
           );
         })}
 
         <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.5rem' }}>
-          {AVAILABLE_LANGUAGES.filter(l => !translations.some(t => t.language === l.code)).map(lang => (
+          {AVAILABLE_LANGUAGES.filter(l => !targetLanguages.includes(l.code)).map(lang => (
             <button 
               key={lang.code}
               className="btn btn-outline" 
@@ -405,6 +409,15 @@ export const FinishedEpisodeView: React.FC<FinishedEpisodeViewProps> = ({
                <button className="btn btn-outline" onClick={() => setIsEditing(false)}>Cancel</button>
                <button className="btn btn-primary" onClick={() => currentTranslation && handleSaveTranslation(currentTranslation.id)}>Save Translation</button>
              </div>
+           </div>
+        ) : activeLanguage !== 'en' && !currentTranslation ? (
+           <div style={{ textAlign: 'center', padding: '4rem 2rem', background: 'var(--bg-panel)', borderRadius: 'var(--radius-md)' }}>
+             <Globe size={32} color="var(--ink-muted)" style={{ margin: '0 auto 1rem' }} />
+             <h3 style={{ fontSize: '1.2rem', marginBottom: '0.5rem' }}>Not Translated Yet</h3>
+             <p style={{ color: 'var(--ink-muted)', marginBottom: '1.5rem' }}>Click below to translate this episode to {AVAILABLE_LANGUAGES.find(l => l.code === activeLanguage)?.name || activeLanguage}.</p>
+             <button className="btn btn-primary" onClick={() => handleAddLanguage(activeLanguage)}>
+               <Sparkles size={16} /> Translate Now
+             </button>
            </div>
         ) : paragraphs.length === 0 ? (
           <p style={{ fontStyle: 'italic', color: 'var(--ink-muted)' }}>No content.</p>

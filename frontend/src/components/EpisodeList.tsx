@@ -62,6 +62,7 @@ export const EpisodeList: React.FC<EpisodeListProps> = ({
   return (
     <aside style={{
       width: '280px',
+      flexShrink: 0,
       display: 'flex',
       flexDirection: 'column',
       gap: '0.75rem',

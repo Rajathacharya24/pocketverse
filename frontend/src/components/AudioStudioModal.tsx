@@ -320,7 +320,7 @@ export const AudioStudioModal: React.FC<AudioStudioModalProps> = ({
         }}>
           <div>
             <div className="eyebrow" style={{ color: 'var(--accent-red)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <UserCheck size={13} /> OpenAI HD Male Voice &bull; Natural Wind Soundscape &bull; {seriesTitle}
+              <UserCheck size={13} /> HIGH-SPEED OPENAI MALE AUDIO SYNTHESIS & SOUNDSCAPE ENGINE eleven labs abbe &bull; {seriesTitle}
             </div>
             <h2 style={{ fontSize: '1.35rem', marginTop: '0.2rem' }}>
               Episode {episode.episode_number}: {episode.title}
