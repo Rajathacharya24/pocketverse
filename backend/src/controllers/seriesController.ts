@@ -91,14 +91,6 @@ export async function getSeriesById(req: Request, res: Response) {
       ep.translations = translations;
     }
 
-    // Parse target_languages if string
-    let parsedLangs = [];
-    if (typeof series.target_languages === 'string') {
-      try {
-        parsedLangs = JSON.parse(series.target_languages);
-      } catch(e) {}
-    }
-    series.target_languages = parsedLangs;
 
     return res.json({
       ...series,
