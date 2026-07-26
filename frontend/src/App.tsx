@@ -20,6 +20,7 @@ export function App() {
 
   const [selectedEpisodeId, setSelectedEpisodeId] = useState<string | null>(null);
   const [currentEpisode, setCurrentEpisode] = useState<Episode | null>(null);
+  const [targetLanguage, setTargetLanguage] = useState<string>('en');
   const [latestAnalysis, setLatestAnalysis] = useState<AnalysisRun | null>(null);
 
   // View Mode: 'dashboard' | 'editor' | 'wizard' | 'finalized'
@@ -90,9 +91,9 @@ export function App() {
     }
   };
 
-  const handleCreateSeries = async (title: string) => {
+  const handleCreateSeries = async (title: string, targetLanguages: string[]) => {
     try {
-      const newSeries = await api.createSeries({ title });
+      const newSeries = await api.createSeries({ title, target_languages: targetLanguages });
       await loadSeriesList();
       setSelectedSeriesId(newSeries.id);
       setIsSeriesModalOpen(false);
@@ -134,6 +135,20 @@ export function App() {
       }
     } catch (err: any) {
       console.error('Failed to delete episode:', err);
+    }
+  };
+
+  const handleDeleteSeries = async (seriesId: string) => {
+    if (!confirm('Are you sure you want to delete this ENTIRE series? This will erase all episodes and audio.')) return;
+    try {
+      await api.deleteSeries(seriesId);
+      setSelectedSeriesId(null);
+      setSeriesData(null);
+      setViewMode('dashboard');
+      await loadSeriesList();
+    } catch (err: any) {
+      console.error('Failed to delete series:', err);
+      alert(err.message || 'Could not delete series');
     }
   };
 
@@ -247,7 +262,8 @@ export function App() {
           selectedEpisodeId={selectedEpisodeId}
           onSelectEpisode={(epId) => {
             setSelectedEpisodeId(epId);
-            setViewMode('editor');
+            const ep = seriesData?.episodes?.find((e: any) => e.id === epId);
+            setViewMode(ep?.status === 'finalized' ? 'finalized' : 'editor');
           }}
           onCreateEpisode={handleCreateEpisode}
           onDeleteEpisode={handleDeleteEpisode}
@@ -267,13 +283,16 @@ export function App() {
               seriesList={seriesList}
               selectedEpisodeId={selectedEpisodeId}
               onSelectSeries={(s) => setSelectedSeriesId(s.id)}
-              onSelectEpisode={(epId) => {
+              onSelectEpisode={(epId, lang = 'en') => {
                 setSelectedEpisodeId(epId);
-                setViewMode('editor');
+                setTargetLanguage(lang);
+                const ep = seriesData?.episodes?.find((e: any) => e.id === epId);
+                setViewMode(ep?.status === 'finalized' || lang !== 'en' ? 'finalized' : 'editor');
               }}
               onCreateEpisode={handleCreateEpisode}
               onOpenNewSeriesModal={() => setIsSeriesModalOpen(true)}
               onDeleteEpisode={handleDeleteEpisode}
+              onDeleteSeries={handleDeleteSeries}
               onOpenAudioStudio={handleOpenAudioStudio}
               onOpenWizard={(ep) => {
                 setSelectedEpisodeId(ep.id);
@@ -295,7 +314,8 @@ export function App() {
               episode={currentEpisode}
               seriesTitle={seriesData?.title || 'Series'}
               analysisRun={latestAnalysis}
-              onBackToEditor={() => handleLaunchWizard(1)}
+              initialLanguage={targetLanguage}
+              onBackToEditor={() => setViewMode('editor')}
               onOpenAudioStudio={() => handleOpenAudioStudio(currentEpisode)}
             />
           ) : (
@@ -303,7 +323,7 @@ export function App() {
               episode={currentEpisode}
               onSaveContent={handleSaveEpisodeContent}
               onLaunchWizard={() => handleLaunchWizard(1)}
-              onViewFinalized={() => setViewMode('dashboard')}
+              onViewFinalized={() => setViewMode('finalized')}
             />
           )}
         </div>

@@ -34,8 +34,11 @@ export const api = {
   // Series
   getAllSeries: () => fetchJson<any[]>('/series'),
   getSeriesById: (id: string) => fetchJson<any>(`/series/${id}`),
-  createSeries: (data: { title: string; description?: string }) =>
+  createSeries: (data: { title: string; description?: string; target_languages?: string[] }) =>
     fetchJson<any>('/series', { method: 'POST', body: JSON.stringify(data) }),
+  updateSeries: (id: string, data: { target_languages?: string[] }) =>
+    fetchJson<any>(`/series/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteSeries: (id: string) => fetchJson<any>(`/series/${id}`, { method: 'DELETE' }),
 
   // Episodes
   createEpisode: (seriesId: string, data: { title: string; content?: string }) =>
@@ -87,6 +90,25 @@ export const api = {
       `/episodes/${episodeId}/audio/publish`,
       { method: 'POST' }
     ),
+
+  // Translations
+  getTranslations: (episodeId: string) => fetchJson<any[]>(`/episodes/${episodeId}/translations`),
+  createTranslation: (episodeId: string, language: string) =>
+    fetchJson<{ id: string; status: string; language: string }>(`/episodes/${episodeId}/translations`, {
+      method: 'POST',
+      body: JSON.stringify({ language }),
+    }),
+  updateTranslation: (translationId: string, data: { translated_content?: string; status?: string; localization_notes?: any }) =>
+    fetchJson<any>(`/translations/${translationId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+  runTranslationQA: (translationId: string) =>
+    fetchJson<any>(`/translations/${translationId}/qa`, { method: 'POST' }),
+  generateTranslationAudio: (translationId: string) =>
+    fetchJson<any>(`/translations/${translationId}/audio/generate`, { method: 'POST' }),
+  publishTranslation: (translationId: string) =>
+    fetchJson<any>(`/translations/${translationId}/publish`, { method: 'POST' }),
 };
 
 // Aliases for Wizard Components compatibility
@@ -98,4 +120,4 @@ export const fetchEpisodeById = (id: string) => api.getEpisodeById(id);
 export const updateEpisode = (id: string, data: { title?: string; content?: string; status?: string }) => api.updateEpisode(id, data);
 export const fetchAllSeries = () => api.getAllSeries();
 export const fetchSeriesById = (id: string) => api.getSeriesById(id);
-export const createSeries = (data: { title: string; description?: string }) => api.createSeries(data);
+export const createSeries = (data: { title: string; description?: string; target_languages?: string[] }) => api.createSeries(data);

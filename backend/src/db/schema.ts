@@ -21,6 +21,7 @@ export function initDb(): Promise<void> {
         CREATE TABLE IF NOT EXISTS series (
           id TEXT PRIMARY KEY,
           title TEXT NOT NULL,
+          target_languages TEXT DEFAULT '[]',
           creator_id TEXT NOT NULL DEFAULT 'creator-default',
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         );
@@ -70,6 +71,35 @@ export function initDb(): Promise<void> {
           status TEXT CHECK(status IN ('generating', 'ready', 'failed')) DEFAULT 'generating',
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           FOREIGN KEY (episode_id) REFERENCES episodes(id) ON DELETE CASCADE
+        );
+      `);
+
+      // Table 5: Translations
+      db.run(`
+        CREATE TABLE IF NOT EXISTS translations (
+          id TEXT PRIMARY KEY,
+          episode_id TEXT NOT NULL,
+          language TEXT NOT NULL,
+          translated_content TEXT NOT NULL,
+          status TEXT CHECK(status IN ('translating', 'needs_review', 'ready', 'published')) DEFAULT 'translating',
+          localization_notes TEXT,
+          published_at DATETIME,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (episode_id) REFERENCES episodes(id) ON DELETE CASCADE
+        );
+      `);
+
+      // Table 6: TranslationAudio
+      db.run(`
+        CREATE TABLE IF NOT EXISTS translation_audio (
+          id TEXT PRIMARY KEY,
+          translation_id TEXT NOT NULL,
+          audio_url TEXT NOT NULL,
+          duration_seconds REAL NOT NULL DEFAULT 0,
+          status TEXT CHECK(status IN ('generating', 'ready', 'failed', 'published')) DEFAULT 'generating',
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (translation_id) REFERENCES translations(id) ON DELETE CASCADE
         );
       `);
 

@@ -1,0 +1,24 @@
+--- backend/src/controllers/seriesController.ts
++++ backend/src/controllers/seriesController.ts
+@@ -111,6 +111,25 @@
+ }
+ 
++export async function updateSeries(req: Request, res: Response) {
++  try {
++    const { id } = req.params;
++    const { target_languages } = req.body;
++    
++    if (target_languages !== undefined) {
++      const targetLangsStr = Array.isArray(target_languages) ? JSON.stringify(target_languages) : '[]';
++      await dbRun('UPDATE series SET target_languages = ? WHERE id = ?', [targetLangsStr, id]);
++    }
++    
++    const series = await dbGet('SELECT * FROM series WHERE id = ?', [id]);
++    return res.json(series);
++  } catch (err: any) {
++    console.error('Error in updateSeries:', err);
++    return res.status(500).json({ error: 'Failed to update series' });
++  }
++}
++
+ export async function deleteSeries(req: Request, res: Response) {

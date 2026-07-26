@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Series, Episode } from '../types';
-import { Plus, Play, Volume2, Edit3, Trash2, RotateCw, FileText, Sparkles, CheckCircle2, ShieldCheck, Clock, Layers, UserCheck, ArrowRight, Mic, Zap, BookOpen, TrendingUp } from 'lucide-react';
+import { Plus, Play, Volume2, Edit3, Trash2, RotateCw, FileText, Sparkles, CheckCircle2, ShieldCheck, Clock, Layers, UserCheck, ArrowRight, Mic, Zap, BookOpen, TrendingUp, Globe } from 'lucide-react';
 import { api } from '../api/client';
 
 interface CreatorDashboardProps {
@@ -8,10 +8,11 @@ interface CreatorDashboardProps {
   seriesList: Series[];
   selectedEpisodeId: string | null;
   onSelectSeries: (series: Series) => void;
-  onSelectEpisode: (episodeId: string) => void;
+  onSelectEpisode: (episodeId: string, languageCode?: string) => void;
   onCreateEpisode: () => void;
   onOpenNewSeriesModal: () => void;
   onDeleteEpisode: (episodeId: string, e: React.MouseEvent) => void;
+  onDeleteSeries?: (seriesId: string) => void;
   onOpenAudioStudio: (episode: Episode, e?: React.MouseEvent) => void;
   onOpenWizard: (episode: Episode) => void;
   onRefreshSeries: () => void;
@@ -26,6 +27,7 @@ export const CreatorDashboard: React.FC<CreatorDashboardProps> = ({
   onCreateEpisode,
   onOpenNewSeriesModal,
   onDeleteEpisode,
+  onDeleteSeries,
   onOpenAudioStudio,
   onOpenWizard,
   onRefreshSeries,
@@ -35,6 +37,25 @@ export const CreatorDashboard: React.FC<CreatorDashboardProps> = ({
   const [editContent, setEditContent] = useState<string>('');
   const [savingScript, setSavingScript] = useState<boolean>(false);
   const [autoRegenAudio, setAutoRegenAudio] = useState<boolean>(true);
+  const [activeLanguageTrack, setActiveLanguageTrack] = useState<string>('en');
+
+  const AVAILABLE_LANGUAGES = [
+    { code: 'kn', name: 'ಕನ್ನಡ', label: 'Kannada' },
+    { code: 'ta', name: 'தமிழ்', label: 'Tamil' },
+    { code: 'te', name: 'తెలుగు', label: 'Telugu' }
+  ];
+
+  const handleAddLanguage = async (code: string) => {
+    try {
+      const updatedLanguages = [...(series?.target_languages || []), code];
+      await api.updateSeries(series!.id, { target_languages: updatedLanguages });
+      onRefreshSeries();
+      setActiveLanguageTrack(code);
+    } catch (err: any) {
+      console.error('Failed to add language:', err);
+      alert('Could not add language to series');
+    }
+  };
 
   // ── No Series: Full Welcome Screen ──
   if (!series) {
@@ -244,9 +265,49 @@ export const CreatorDashboard: React.FC<CreatorDashboardProps> = ({
           <button className="btn btn-primary" onClick={onCreateEpisode} style={{ fontSize: '0.76rem' }}>
             <Plus size={14} /> Add Episode
           </button>
+          {onDeleteSeries && (
+            <button className="btn btn-outline" onClick={() => onDeleteSeries(series.id)} style={{ fontSize: '0.76rem', color: 'var(--accent-red)', borderColor: 'rgba(217, 30, 54, 0.2)' }}>
+              <Trash2 size={14} /> Delete Series
+            </button>
+          )}
         </div>
       </div>
 
+      {/* ── Language Track Tabs ── */}
+      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.5rem', paddingLeft: '0.5rem', flexWrap: 'wrap' }}>
+        <Globe size={18} color="var(--ink-muted)" />
+        <button 
+          className={`btn ${activeLanguageTrack === 'en' ? 'btn-primary' : 'btn-outline'}`}
+          onClick={() => setActiveLanguageTrack('en')}
+          style={{ padding: '0.4rem 1rem', fontSize: '0.8rem' }}
+        >
+          English (Original)
+        </button>
+        {series.target_languages && series.target_languages.map(langCode => {
+          const langInfo = AVAILABLE_LANGUAGES.find(l => l.code === langCode);
+          return (
+            <button 
+              key={langCode}
+              className={`btn ${activeLanguageTrack === langCode ? 'btn-primary' : 'btn-outline'}`}
+              onClick={() => setActiveLanguageTrack(langCode)}
+              style={{ padding: '0.4rem 1rem', fontSize: '0.8rem' }}
+            >
+              {langInfo?.name || langCode} (Localized)
+            </button>
+          );
+        })}
+        {AVAILABLE_LANGUAGES.filter(l => !(series.target_languages || []).includes(l.code)).map(lang => (
+          <button
+            key={`add-${lang.code}`}
+            className="btn btn-outline"
+            onClick={() => handleAddLanguage(lang.code)}
+            style={{ padding: '0.4rem 1rem', fontSize: '0.8rem', borderStyle: 'dashed' }}
+            title={`Add ${lang.name} translation`}
+          >
+            + Add {lang.name}
+          </button>
+        ))}
+      </div>
       {/* ── Production Pipeline Visualization (Signature Element) ── */}
       {episodes.length > 0 && (
         <div style={{
@@ -451,14 +512,55 @@ export const CreatorDashboard: React.FC<CreatorDashboardProps> = ({
               const isSelected = selectedEpisodeId === ep.id;
               const wordCount = ep.content ? ep.content.trim().split(/\s+/).filter(Boolean).length : 0;
               const estimatedMinutes = Math.max(1, Math.ceil(wordCount / 130));
-              const hasAudio = ep.audio_status === 'ready_to_review' || ep.audio_status === 'published';
-              const isAnalyzed = ep.status === 'analyzed' || ep.status === 'finalized';
+              
+              let hasAudio = false;
+              let isAnalyzed = false;
+              let currentStatusText = 'Draft';
+              let badgeClass = 'badge-draft';
+              let badgeIcon = <Clock size={8} />;
+
+              if (activeLanguageTrack === 'en') {
+                hasAudio = ep.audio_status === 'ready_to_review' || ep.audio_status === 'published';
+                isAnalyzed = ep.status === 'analyzed' || ep.status === 'finalized';
+                
+                if (ep.audio_status === 'published') {
+                  currentStatusText = 'Published'; badgeClass = 'badge-finalized'; badgeIcon = <ShieldCheck size={8} />;
+                } else if (ep.audio_status === 'ready_to_review') {
+                  currentStatusText = 'Audio Ready'; badgeClass = 'badge-analyzed'; badgeIcon = <Sparkles size={8} />;
+                } else if (ep.status === 'finalized') {
+                  currentStatusText = 'Finalized'; badgeClass = 'badge-analyzed'; badgeIcon = <CheckCircle2 size={8} />;
+                } else if (ep.status === 'analyzed') {
+                  currentStatusText = 'Analyzed'; badgeClass = 'badge-analyzed'; badgeIcon = <Sparkles size={8} />;
+                } else {
+                  currentStatusText = 'Draft'; badgeClass = 'badge-draft'; badgeIcon = <Clock size={8} />;
+                }
+              } else {
+                const translation = ep.translations?.find(t => t.language === activeLanguageTrack);
+                if (translation) {
+                  hasAudio = translation.audio?.status === 'ready' || translation.audio?.status === 'published';
+                  isAnalyzed = translation.status === 'ready' || translation.status === 'published';
+                  
+                  if (translation.audio?.status === 'published') {
+                    currentStatusText = 'Published'; badgeClass = 'badge-finalized'; badgeIcon = <ShieldCheck size={8} />;
+                  } else if (translation.audio?.status === 'ready') {
+                    currentStatusText = 'Audio Ready'; badgeClass = 'badge-analyzed'; badgeIcon = <Sparkles size={8} />;
+                  } else if (translation.status === 'ready' || translation.status === 'published') {
+                    currentStatusText = 'Translated'; badgeClass = 'badge-analyzed'; badgeIcon = <CheckCircle2 size={8} />;
+                  } else if (translation.status === 'translating') {
+                    currentStatusText = 'Translating...'; badgeClass = 'badge-analyzed'; badgeIcon = <RotateCw size={8} className="spin" />;
+                  } else {
+                    currentStatusText = 'Needs Review'; badgeClass = 'badge-draft'; badgeIcon = <Clock size={8} />;
+                  }
+                } else {
+                  currentStatusText = 'Not Translated'; badgeClass = 'badge-draft'; badgeIcon = <Globe size={8} />;
+                }
+              }
 
               return (
                 <div
                   key={ep.id}
                   className="ep-row"
-                  onClick={() => onSelectEpisode(ep.id)}
+                  onClick={() => onSelectEpisode(ep.id, activeLanguageTrack)}
                   style={{
                     padding: '1rem 1.25rem',
                     borderRadius: 'var(--radius-md)',
@@ -494,27 +596,9 @@ export const CreatorDashboard: React.FC<CreatorDashboardProps> = ({
                         <span style={{ fontWeight: 600, fontSize: '0.92rem', color: 'var(--ink-primary)' }}>
                           {ep.title}
                         </span>
-                        {ep.audio_status === 'published' ? (
-                          <span className="badge-pill badge-finalized" style={{ fontSize: '0.52rem', padding: '0.08rem 0.4rem' }}>
-                            <ShieldCheck size={8} /> Published
-                          </span>
-                        ) : ep.audio_status === 'ready_to_review' ? (
-                          <span className="badge-pill badge-analyzed" style={{ fontSize: '0.52rem', padding: '0.08rem 0.4rem' }}>
-                            <Sparkles size={8} /> Audio Ready
-                          </span>
-                        ) : ep.status === 'finalized' ? (
-                          <span className="badge-pill badge-analyzed" style={{ fontSize: '0.52rem', padding: '0.08rem 0.4rem' }}>
-                            <CheckCircle2 size={8} /> Finalized
-                          </span>
-                        ) : ep.status === 'analyzed' ? (
-                          <span className="badge-pill badge-analyzed" style={{ fontSize: '0.52rem', padding: '0.08rem 0.4rem' }}>
-                            Analyzed
-                          </span>
-                        ) : (
-                          <span className="badge-pill badge-draft" style={{ fontSize: '0.52rem', padding: '0.08rem 0.4rem' }}>
-                            Draft
-                          </span>
-                        )}
+                        <span className={`badge-pill ${badgeClass}`} style={{ fontSize: '0.52rem', padding: '0.08rem 0.4rem' }}>
+                          {badgeIcon} {currentStatusText}
+                        </span>
                       </div>
                       <div style={{ fontSize: '0.72rem', color: 'var(--ink-muted)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                         <span><FileText size={10} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '2px' }} />{wordCount} words</span>
@@ -537,7 +621,7 @@ export const CreatorDashboard: React.FC<CreatorDashboardProps> = ({
                     {hasAudio ? (
                       <button
                         className="btn"
-                        onClick={(e) => { e.stopPropagation(); onOpenAudioStudio(ep, e); }}
+                        onClick={(e) => { e.stopPropagation(); activeLanguageTrack === 'en' ? onOpenAudioStudio(ep, e) : onSelectEpisode(ep.id, activeLanguageTrack); }}
                         style={{
                           fontSize: '0.72rem', padding: '0.4rem 0.85rem',
                           background: 'rgba(95, 224, 122, 0.08)',
@@ -549,7 +633,7 @@ export const CreatorDashboard: React.FC<CreatorDashboardProps> = ({
                     ) : (
                       <button
                         className="btn btn-primary"
-                        onClick={(e) => { e.stopPropagation(); onOpenAudioStudio(ep, e); }}
+                        onClick={(e) => { e.stopPropagation(); activeLanguageTrack === 'en' ? onOpenAudioStudio(ep, e) : onSelectEpisode(ep.id, activeLanguageTrack); }}
                         style={{ fontSize: '0.72rem', padding: '0.4rem 0.85rem' }}
                       >
                         <Volume2 size={12} /> Generate
@@ -564,14 +648,20 @@ export const CreatorDashboard: React.FC<CreatorDashboardProps> = ({
                     }}>
                       <button
                         title="Edit Script"
-                        onClick={(e) => handleOpenEditModal(ep, e)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          activeLanguageTrack === 'en' ? handleOpenEditModal(ep, e) : onSelectEpisode(ep.id, activeLanguageTrack);
+                        }}
                         style={{ border: 'none', padding: '0.3rem', borderRadius: '3px', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
                       >
                         <Edit3 size={13} color="var(--ink-secondary)" />
                       </button>
                       <button
                         title="Re-Generate Audio"
-                        onClick={(e) => handleReGenerateAudio(ep, e)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          activeLanguageTrack === 'en' ? handleReGenerateAudio(ep, e) : onSelectEpisode(ep.id, activeLanguageTrack);
+                        }}
                         style={{ border: 'none', padding: '0.3rem', borderRadius: '3px', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
                       >
                         <RotateCw size={13} color="var(--ink-secondary)" />

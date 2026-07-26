@@ -1,9 +1,11 @@
 export interface Series {
   id: string;
   title: string;
+  target_languages?: string[];
   creator_id: string;
   created_at: string;
   episodes?: Episode[];
+  episode_count?: number; // Only returned by getAllSeries
 }
 
 export type EpisodeStatus = 'draft' | 'analyzed' | 'finalized';
@@ -18,6 +20,7 @@ export interface Episode {
   content: string;
   status: EpisodeStatus;
   audio_status?: AudioStatus;
+  translations?: Translation[];
   published_at?: string | null;
   created_at: string;
   updated_at: string;
@@ -117,4 +120,38 @@ export interface AnalysisRun {
   status: AnalysisStatus;
   created_at: string;
   updated_at: string;
+}
+
+export interface QAIssue {
+  id: string;
+  snippet: string;
+  issue: string;
+  suggested_fix: string;
+  accepted: boolean;
+}
+
+export type TranslationStatus = 'translating' | 'needs_review' | 'ready' | 'published';
+
+export interface Translation {
+  id: string;
+  episode_id: string;
+  language: string;
+  translated_content: string;
+  status: TranslationStatus;
+  localization_notes: QAIssue[] | null;
+  audio?: TranslationAudio | null;
+  published_at?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type TranslationAudioStatus = 'generating' | 'ready' | 'failed' | 'published';
+
+export interface TranslationAudio {
+  id: string;
+  translation_id: string;
+  audio_url: string;
+  duration_seconds: number;
+  status: TranslationAudioStatus;
+  created_at: string;
 }

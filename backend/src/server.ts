@@ -10,6 +10,7 @@ import * as SeriesController from './controllers/seriesController';
 import * as EpisodeController from './controllers/episodeController';
 import * as AnalysisController from './controllers/analysisController';
 import { AudioController } from './controllers/audioController';
+import * as TranslationController from './controllers/translationController';
 
 dotenv.config();
 
@@ -36,6 +37,8 @@ app.get('/api/progress/:jobId', (req, res) => {
 app.get('/api/series', SeriesController.getAllSeries);
 app.post('/api/series', SeriesController.createSeries);
 app.get('/api/series/:id', SeriesController.getSeriesById);
+app.put('/api/series/:id', SeriesController.updateSeries);
+app.delete('/api/series/:id', SeriesController.deleteSeries);
 
 // 2. Episode Routes
 app.post('/api/series/:seriesId/episodes', EpisodeController.createEpisode);
@@ -54,6 +57,14 @@ app.post('/api/episodes/:id/audio/direction', AudioController.getDirection);
 app.post('/api/episodes/:id/audio/generate', AudioController.generate);
 app.get('/api/episodes/:id/audio', AudioController.getAudioStatus);
 app.post('/api/episodes/:id/audio/publish', AudioController.publish);
+
+// 5. Translation & Localization Routes
+app.get('/api/episodes/:id/translations', TranslationController.getTranslations);
+app.post('/api/episodes/:id/translations', TranslationController.createTranslation);
+app.put('/api/translations/:id', TranslationController.updateTranslation);
+app.post('/api/translations/:id/qa', TranslationController.runQAPass);
+app.post('/api/translations/:id/audio/generate', TranslationController.generateAudio);
+app.post('/api/translations/:id/publish', TranslationController.publishTranslation);
 
 // Health check
 app.get('/api/health', (req, res) => {

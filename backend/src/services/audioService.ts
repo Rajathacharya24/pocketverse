@@ -485,6 +485,69 @@ Return JSON:
     };
   }
 
+  // --- Phase 3: Multi-Language Audio Generation ---
+
+  static async generateTranslationAudio(translationId: string, text: string, languageCode: string): Promise<any> {
+    const renderId = uuidv4();
+    const jobId = `translation-audio-${translationId}`;
+
+    progressService.resetProgress(jobId);
+    progressService.updateProgress(jobId, 10, '🎙️ Initializing Multi-Language Audio Synthesis...', `[AudioService] ⚡ Starting Audio Render for Translation ID: ${translationId}`, 'Google TTS');
+
+    const filename = `translation-${renderId}.mp3`;
+    const outputPath = path.join(PUBLIC_AUDIO_DIR, filename);
+    const audioUrl = `/audio/${filename}`;
+
+    try {
+      progressService.updateProgress(jobId, 30, '🎙️ Fetching translated speech audio...', `[AudioService] Fetching speech for language ${languageCode}`, 'Google TTS');
+      
+      const cleanText = text.trim() || 'No text provided';
+      const base64Chunks = await getAllAudioBase64(cleanText, {
+        lang: languageCode,
+        slow: false,
+        host: 'https://translate.google.com',
+        timeout: 20000,
+      });
+
+      const rawBuffer = Buffer.concat(base64Chunks.map(c => Buffer.from(c.base64, 'base64')));
+      let narrationPath = path.join(PUBLIC_AUDIO_DIR, `narration-${renderId}.mp3`);
+      fs.writeFileSync(narrationPath, rawBuffer);
+
+      let finalDuration = 0;
+      try {
+        const stat = fs.statSync(narrationPath);
+        finalDuration = Math.max(10, Math.round(stat.size / 16000));
+      } catch (e) {
+        finalDuration = 10;
+      }
+
+      progressService.updateProgress(jobId, 70, '🎛️ Saving multi-language audio output...', '[AudioService] Saving output audio', 'Audio Engine');
+
+      fs.renameSync(narrationPath, outputPath);
+
+      await dbRun(`
+        UPDATE translation_audio 
+        SET audio_url = ?, duration_seconds = ?, status = 'ready'
+        WHERE translation_id = ? AND status = 'generating'
+      `, [audioUrl, finalDuration, translationId]);
+
+      progressService.completeProgress(jobId, `[AudioService] ✅ Multi-Language Audio Render Complete! File: ${audioUrl}`);
+
+      return {
+        id: renderId,
+        translation_id: translationId,
+        audio_url: audioUrl,
+        duration_seconds: finalDuration,
+        status: 'ready',
+      };
+    } catch (err: any) {
+      console.error('[AudioService] Translation Audio Generation Failed:', err?.message || err);
+      await dbRun('UPDATE translation_audio SET status = "failed" WHERE translation_id = ? AND status = "generating"', [translationId]);
+      progressService.failProgress(jobId, err?.message || 'Translation Audio generation failed');
+      throw err;
+    }
+  }
+
   // --- Fallback Spoken Audio Generator (MP3) ---
 
   private static async generateFallbackSpeechNarrationMp3(text: string, outputPath: string): Promise<void> {

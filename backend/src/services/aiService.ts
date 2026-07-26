@@ -36,6 +36,17 @@ export interface AnalyzeToneParams {
   } | null;
 }
 
+export interface RunLocalizationParams {
+  content: string;
+  language: string; // 'kn', 'ta', 'te'
+}
+
+export interface RunLocalizationQAParams {
+  originalContent: string;
+  translatedContent: string;
+  language: string;
+}
+
 function getOpenAIClient(): OpenAI | null {
   const backendEnvPath = path.join(__dirname, '../../.env');
   const rootEnvPath = path.join(process.cwd(), '.env');
@@ -309,7 +320,182 @@ Return ONLY a valid JSON object:
     return fallback;
   }
 
+  /**
+   * STEP 4: Localization Director Translation
+   */
+  static async runLocalization(params: RunLocalizationParams, jobId: string) {
+    const { content, language } = params;
+    const openai = getOpenAIClient();
+
+    let languageName = language;
+    if (language === 'kn') languageName = 'Kannada';
+    else if (language === 'ta') languageName = 'Tamil';
+    else if (language === 'te') languageName = 'Telugu';
+
+    progressService.resetProgress(jobId);
+    progressService.updateProgress(jobId, 25, `⚡ Translating to ${languageName}...`, `[AIService] ⚡ Executing Localization Director for ${languageName}...`, 'GPT-4o');
+
+    if (openai) {
+      console.log(`[AIService] ⚡ Executing Localization Director for ${languageName}...`);
+      try {
+        const prompt = `
+You are a Master Localization Director and native bilingual storyteller. You are translating a dramatic audio script into ${languageName}.
+You must write the way a real bilingual speaker actually talks: character names and modern tech terms stay in English (natural code-switching), narrative and emotional content translates into the target script naturally, tone and cliffhanger pacing from the English original are preserved, and the result reads as natural spoken language—not a formal, textbook translation.
+
+MANUSCRIPT:
+"""
+${content}
+"""
+
+Return ONLY a valid JSON object:
+{
+  "translated_content": "Full translated script with natural code-switching"
+}
+`;
+
+        const response = await openai.chat.completions.create({
+          model: 'gpt-4o',
+          messages: [
+            {
+              role: 'system',
+              content: 'You are a Master Localization Director. Respond strictly in JSON.',
+            },
+            { role: 'user', content: prompt },
+          ],
+          response_format: { type: 'json_object' },
+          temperature: 0.7,
+        });
+
+        progressService.updateProgress(jobId, 85, `✨ Finalizing ${languageName} script...`, `[AIService] Finalizing translated script`, 'GPT-4o');
+
+        const parsed = JSON.parse(response.choices[0].message.content || '{}');
+        progressService.completeProgress(jobId, `[AIService] ✅ Localization to ${languageName} Complete!`);
+
+        return {
+          translated_content: parsed.translated_content || content,
+        };
+      } catch (err: any) {
+        console.error('[AIService] OpenAI Localization Call Error:', err?.message || err);
+        progressService.failProgress(jobId, err?.message || 'Localization failed, using fallback');
+      }
+    }
+
+    // Fallback if OpenAI fails or is not configured
+    console.log(`[AIService] Using fallback localization for ${languageName}`);
+    const fallbackContent = AIService.dynamicContentLocalization(content, languageName);
+    progressService.completeProgress(jobId, `[AIService] ✅ Localization to ${languageName} Complete (Fallback)!`);
+    return {
+      translated_content: fallbackContent
+    };
+  }
+
+  /**
+   * STEP 5: Localization QA
+   */
+  static async runLocalizationQA(params: RunLocalizationQAParams, jobId: string) {
+    const { originalContent, translatedContent, language } = params;
+    const openai = getOpenAIClient();
+
+    let languageName = language;
+    if (language === 'kn') languageName = 'Kannada';
+    else if (language === 'ta') languageName = 'Tamil';
+    else if (language === 'te') languageName = 'Telugu';
+
+    progressService.resetProgress(jobId);
+    progressService.updateProgress(jobId, 25, `⚡ Running QA on ${languageName} translation...`, `[AIService] ⚡ Executing Localization QA for ${languageName}...`, 'GPT-4o');
+
+    if (openai) {
+      console.log(`[AIService] ⚡ Executing Localization QA for ${languageName}...`);
+      try {
+        const prompt = `
+You are a Localization QA Specialist reviewing a translated audio drama script in ${languageName}.
+Check the translation specifically for:
+1. Literal/awkward phrasing that no native speaker would use.
+2. Inconsistent code-switching (e.g., translating a character name or tech term that should have stayed in English).
+3. Script/grammar correctness in ${languageName}.
+
+ORIGINAL ENGLISH SCRIPT:
+"""
+${originalContent}
+"""
+
+TRANSLATED SCRIPT (${languageName}):
+"""
+${translatedContent}
+"""
+
+Return ONLY a valid JSON object:
+{
+  "qa_issues": [
+    {
+      "snippet": "Exact problematic translated phrase",
+      "issue": "Explanation of awkward phrasing or code-switching failure",
+      "suggested_fix": "Natural spoken ${languageName} or code-switched English fix"
+    }
+  ]
+}
+`;
+
+        const response = await openai.chat.completions.create({
+          model: 'gpt-4o',
+          messages: [
+            {
+              role: 'system',
+              content: 'You are a Localization QA Specialist. Respond strictly in JSON.',
+            },
+            { role: 'user', content: prompt },
+          ],
+          response_format: { type: 'json_object' },
+          temperature: 0.3,
+        });
+
+        progressService.updateProgress(jobId, 85, `✨ Formatting QA issues...`, `[AIService] Formatting Localization QA issues`, 'GPT-4o');
+
+        const parsed = JSON.parse(response.choices[0].message.content || '{}');
+        const items = (parsed.qa_issues || []).map((g: any) => ({
+          id: uuidv4(),
+          snippet: g.snippet || '',
+          issue: g.issue || 'QA Finding',
+          suggested_fix: g.suggested_fix || g.snippet,
+          accepted: false,
+        }));
+
+        progressService.completeProgress(jobId, `[AIService] ✅ Localization QA for ${languageName} Complete!`);
+        return items;
+      } catch (err: any) {
+        console.error('[AIService] OpenAI Localization QA Call Error:', err?.message || err);
+        progressService.failProgress(jobId, err?.message || 'Localization QA failed, using fallback');
+      }
+    }
+
+    // Fallback if OpenAI fails or is not configured
+    console.log(`[AIService] Using fallback localization QA for ${languageName}`);
+    const fallbackIssues = AIService.dynamicContentLocalizationQA(translatedContent, languageName);
+    progressService.completeProgress(jobId, `[AIService] ✅ Localization QA for ${languageName} Complete (Fallback)!`);
+    return fallbackIssues;
+  }
+
   // --- Dynamic Fallback Text Analyzer ---
+
+  private static dynamicContentLocalization(content: string, languageName: string) {
+    return `[MOCK ${languageName.toUpperCase()} TRANSLATION]
+
+${content}
+
+[MOCK: In a real environment with OpenAI API access, this would be a high-quality native localization in ${languageName} with natural code-switching.]`;
+  }
+
+  private static dynamicContentLocalizationQA(content: string, languageName: string) {
+    return [
+      {
+        id: uuidv4(),
+        snippet: 'Mock awkward phrasing detected',
+        issue: 'This is a mock QA issue because the OpenAI call failed or the API key was invalid.',
+        suggested_fix: `Suggested fix in ${languageName}`,
+        accepted: false
+      }
+    ];
+  }
 
   private static dynamicContentContinuity(currentEpisode: any, previousEpisode: any) {
     const text = currentEpisode.content || '';
