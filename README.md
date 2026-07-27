@@ -105,4 +105,4 @@ Run the entire stack (Express backend and Vite frontend) with a single command. 
 - **Single Ambient Bed**: The audio engine currently relies exclusively on a generated wind soundscape. Future updates will introduce dynamic Foley insertion based on script content.
 
 ## Team
-Built by **Team Ortex** for the Zwro To One hackathon. Focusing on AI-powered creator workflows and breaking down barriers to audio production.
+Built by **Team Ortex** for the Zero To One hackathon. Focusing on AI-powered creator workflows and breaking down barriers to audio production.
